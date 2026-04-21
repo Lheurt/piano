@@ -4,6 +4,9 @@ function ChordsView({ midiConnected, midiDeviceName }) {
   const [tier, setTier] = React.useState(1);
   const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8, true));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
+  // `selected` is a Set of MIDI numbers.
+  const [selected, setSelected] = React.useState(() => new Set());
+  const [muted, setMuted] = React.useState(false);
 
   const isDone = playheadIdx >= chords.length;
   const current = chords[playheadIdx];
@@ -14,15 +17,34 @@ function ChordsView({ midiConnected, midiDeviceName }) {
     setTier(t);
     setChords(window.makeChordPassage(t, 8, true));
     setPlayheadIdx(0);
+    setSelected(new Set());
   };
 
   const newPassage = () => {
     setChords(window.makeChordPassage(tier, 8, true));
     setPlayheadIdx(0);
+    setSelected(new Set());
   };
 
-  // Temporary "skip" advance until Task 7 wires Check.
-  const skip = () => setPlayheadIdx(i => Math.min(i + 1, chords.length));
+  const onKey = (pitch) => {
+    window.playNote(pitch);
+    if (isDone) return;
+    const midi = window.pitchToMidi(pitch);
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(midi)) next.delete(midi);
+      else next.add(midi);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  // Convert `selected` (Set<midi>) to the `highlighted` map TwoOctaveKeyboard expects.
+  const highlighted = {};
+  selected.forEach(midi => {
+    highlighted[window.midiToName(midi)] = 'selected';
+  });
 
   return (
     <div className="pane wide practice-pane">
@@ -62,9 +84,15 @@ function ChordsView({ midiConnected, midiDeviceName }) {
         )}
       </div>
 
+      <TwoOctaveKeyboard highlighted={highlighted} onKey={onKey} />
+
       <div className="practice-actions">
+        <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
+          <div className={'toggle' + (muted ? ' on' : '')} onClick={() => { const v = !muted; setMuted(v); window.setMuted(v); }} />
+          Mute
+        </label>
         <div className="spacer" />
-        <button className="btn btn-secondary btn-sm" onClick={skip} disabled={isDone}>Skip</button>
+        <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone}>Clear</button>
         <button className="btn btn-primary btn-sm" onClick={newPassage}>New passage</button>
       </div>
     </div>
