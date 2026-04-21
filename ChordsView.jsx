@@ -1,5 +1,41 @@
 // ChordsView.jsx — chord identification practice.
 
+function ChordHintPanel({ chord }) {
+  const e = window.chordExplanation(chord);
+  return (
+    <div className="chord-hint-panel">
+      <ChordStack root={chord.root} quality={chord.quality} bass={chord.bass} />
+      <div className="chord-hint-body">
+        <div className="chord-hint-row">
+          <span className="chord-hint-label">Root</span>
+          <span className="chord-hint-val">{e.root}</span>
+        </div>
+        <div className="chord-hint-row">
+          <span className="chord-hint-label">Quality</span>
+          <span className="chord-hint-val">{e.qualityLabel} <span className="mono chord-hint-sym">({e.qualitySymbol || 'maj'})</span></span>
+        </div>
+        {e.bass && (
+          <div className="chord-hint-row">
+            <span className="chord-hint-label">Inversion</span>
+            <span className="chord-hint-val">{e.bass} in the bass</span>
+          </div>
+        )}
+        <div className="chord-hint-section-head mono">Built from</div>
+        <div className="chord-hint-intervals">
+          {e.intervals.map((iv, i) => (
+            <div className="chord-hint-interval" key={i}>
+              <span className="chord-hint-iv-name">{iv.name}</span>
+              <span className="chord-hint-iv-semis mono">+{iv.semitones}</span>
+              <span className="chord-hint-iv-tone">{iv.tone}</span>
+            </div>
+          ))}
+        </div>
+        <div className="chord-hint-prose">{e.prose}</div>
+      </div>
+    </div>
+  );
+}
+
 function ChordsView({ midiConnected, midiDeviceName }) {
   const [tier, setTier] = React.useState(1);
   const [accidentals, setAccidentals] = React.useState(true);
@@ -9,6 +45,7 @@ function ChordsView({ midiConnected, midiDeviceName }) {
   const [muted, setMuted] = React.useState(false);
   // When truthy, this is the latest validateChord() result; used to render feedback.
   const [feedback, setFeedback] = React.useState(null);
+  const [showHint, setShowHint] = React.useState(false);
 
   const isDone = playheadIdx >= chords.length;
   const current = chords[playheadIdx];
@@ -84,6 +121,18 @@ function ChordsView({ midiConnected, midiDeviceName }) {
     selected.forEach(midi => {
       highlighted[window.midiToName(midi)] = 'selected';
     });
+    if (showHint && !isDone && current) {
+      current.pitchClasses.forEach(pc => {
+        const midi = 60 + pc;
+        const name = window.midiToName(midi);
+        if (!highlighted[name]) highlighted[name] = 'active';
+      });
+      if (current.bass) {
+        const bassMidi = 48 + current.bassPitchClass;
+        const name = window.midiToName(bassMidi);
+        if (!highlighted[name]) highlighted[name] = 'active';
+      }
+    }
   } else if (!feedback.empty) {
     selected.forEach(midi => {
       const pc = ((midi % 12) + 12) % 12;
@@ -135,15 +184,28 @@ function ChordsView({ midiConnected, midiDeviceName }) {
         </div>
       </div>
 
-      <div className="chord-prompt">
-        {isDone ? (
-          <span className="chord-prompt-done mono">
-            {correct} of {chords.length} correct
-          </span>
-        ) : (
-          <span className="chord-prompt-name">{current.displayName}</span>
+      <div className="chord-prompt-wrap">
+        <div className="chord-prompt">
+          {isDone ? (
+            <span className="chord-prompt-done mono">
+              {correct} of {chords.length} correct
+            </span>
+          ) : (
+            <span className="chord-prompt-name">{current.displayName}</span>
+          )}
+        </div>
+        {!isDone && current && (
+          <button
+            className={'hint-toggle' + (showHint ? ' on' : '')}
+            onClick={() => setShowHint(h => !h)}
+            title={showHint ? 'Hide hint' : 'Show hint'}
+          >
+            ?
+          </button>
         )}
       </div>
+
+      {showHint && !isDone && current && <ChordHintPanel chord={current} />}
 
       <TwoOctaveKeyboard highlighted={highlighted} onKey={onKey} />
 

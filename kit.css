@@ -603,3 +603,79 @@ kbd {
   background: var(--paper-0);
   padding: 4px 2px;
 }
+
+/* ---------- Chord hint panel ------------------------------------------- */
+.chord-prompt-wrap {
+  position: relative;
+}
+.chord-prompt-wrap .hint-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.chord-hint-panel {
+  display: flex;
+  gap: 20px;
+  padding: 16px 18px;
+  margin: 0 0 18px;
+  background: var(--paper-1);
+  border: 1px solid var(--paper-3);
+  border-radius: 3px;
+}
+.chord-hint-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-serif);
+  color: var(--fg);
+}
+.chord-hint-row {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 14px;
+}
+.chord-hint-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.chord-hint-val { color: var(--fg); }
+.chord-hint-sym { color: var(--fg-muted); }
+.chord-hint-section-head {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin: 10px 0 4px;
+}
+.chord-hint-intervals {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chord-hint-interval {
+  display: grid;
+  grid-template-columns: 110px 50px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.chord-hint-iv-semis { color: var(--fg-subtle); }
+.chord-hint-iv-tone  { color: var(--fg); font-family: var(--font-mono); }
+.chord-hint-prose {
+  margin-top: 10px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.45;
+}
