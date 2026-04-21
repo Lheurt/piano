@@ -88,6 +88,13 @@ function ChordsView({ midiConnected, midiDeviceName }) {
     });
   };
 
+  const onKeyRef = React.useRef(null);
+  onKeyRef.current = onKey;
+  React.useEffect(() => {
+    window.registerMidiCallback((pitch) => onKeyRef.current(pitch));
+    return () => window.registerMidiCallback(null);
+  }, []);
+
   const clearSelection = () => {
     if (feedback) return;
     setSelected(new Set());
