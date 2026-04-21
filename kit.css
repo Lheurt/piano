@@ -548,3 +548,28 @@ kbd {
 .m-root .kb-split-row { gap: 8px; }
 .m-root .kb-clef-label { font-size: 18px; min-width: 48px; }
 .m-root .btn.btn-sm { padding: 8px 12px; font-size: 12px; }
+
+/* ---------- Chord prompt ----------------------------------------------- */
+.chord-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 24px 12px;
+  background: var(--paper-0);
+  border: 1px solid var(--paper-3);
+  border-radius: 3px;
+  margin: 18px 0;
+}
+.chord-prompt-name {
+  font-family: var(--font-mono);
+  font-size: 48px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+.chord-prompt-done {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--fg-muted);
+}
