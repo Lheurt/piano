@@ -539,7 +539,7 @@ kbd {
 .m-brand-glyph { font-family: var(--font-serif); font-size: 22px; color: var(--accent); line-height: 1; }
 .m-brand-name { font-family: var(--font-serif); font-size: 15px; font-weight: 500; letter-spacing: 0.01em; }
 .m-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.m-tabbar { flex-shrink: 0; display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--paper-1); border-top: 1px solid var(--paper-3); gap: 4px; }
+.m-tabbar { flex-shrink: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--paper-1); border-top: 1px solid var(--paper-3); gap: 4px; }
 .m-tab { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--fg-subtle); font-family: var(--font-sans); }
 .m-tab-glyph { font-family: var(--font-serif); font-size: 18px; line-height: 1; }
 .m-tab-label { font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
