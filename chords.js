@@ -219,6 +219,49 @@
     };
   }
 
+  // Validate a set of selected MIDI numbers against a chord entry.
+  // Returns:
+  //   {
+  //     ok: boolean,
+  //     selectedPcsCorrect: Set<pc>      // PCs that are in the required set
+  //     selectedPcsExtra: Set<pc>        // PCs that are NOT in the required set
+  //     missingPcs: Set<pc>              // required PCs with no selection
+  //     bassWrong: boolean | null        // null for non-inversion chords
+  //   }
+  function validateChord(selectedMidis, chord) {
+    var selected = selectedMidis instanceof Set ? selectedMidis : new Set(selectedMidis);
+    if (selected.size === 0) {
+      return { ok: false, empty: true };
+    }
+    var required = new Set(chord.pitchClasses);
+    var selectedPcsCorrect = new Set();
+    var selectedPcsExtra = new Set();
+    selected.forEach(function (m) {
+      var pc = ((m % 12) + 12) % 12;
+      if (required.has(pc)) selectedPcsCorrect.add(pc);
+      else selectedPcsExtra.add(pc);
+    });
+    var missingPcs = new Set();
+    required.forEach(function (pc) {
+      if (!selectedPcsCorrect.has(pc)) missingPcs.add(pc);
+    });
+    var bassWrong = null;
+    if (chord.bass) {
+      var lowest = Math.min.apply(null, Array.from(selected));
+      var lowestPc = ((lowest % 12) + 12) % 12;
+      bassWrong = lowestPc !== chord.bassPitchClass;
+    }
+    var ok = selectedPcsExtra.size === 0 && missingPcs.size === 0 && bassWrong !== true;
+    return {
+      ok: ok,
+      empty: false,
+      selectedPcsCorrect: selectedPcsCorrect,
+      selectedPcsExtra: selectedPcsExtra,
+      missingPcs: missingPcs,
+      bassWrong: bassWrong
+    };
+  }
+
   var api = {
     QUALITIES: QUALITIES,
     ROOT_SPELLINGS: ROOT_SPELLINGS,
@@ -238,6 +281,8 @@
   api.INTERVAL_NAMES = INTERVAL_NAMES;
   api.PROSE = PROSE;
   api.chordExplanation = chordExplanation;
+
+  api.validateChord = validateChord;
 
   // Populate both environments.
   if (typeof module !== 'undefined' && module.exports) {

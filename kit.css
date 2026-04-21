@@ -583,3 +583,13 @@ kbd {
   background: var(--ink-2);
   box-shadow: inset 0 0 0 1.5px var(--accent);
 }
+
+/* ---------- Keyboard: missing (post-Check feedback) -------------------- */
+.white-key.missing {
+  background: var(--paper-0);
+  box-shadow: inset 0 0 0 2px #c7a14a; /* amber outline */
+}
+.black-key.missing {
+  background: var(--ink-3);
+  box-shadow: inset 0 0 0 2px #c7a14a;
+}

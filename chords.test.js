@@ -169,3 +169,55 @@ test('chordExplanation on Fm uses flat spelling for A♭', () => {
   const e = C.chordExplanation(chord);
   assert.deepEqual(e.intervals.map(i => i.tone), ['F', 'A♭', 'C']);
 });
+
+test('validateChord: empty selection is not ok', () => {
+  const chord = C.buildChord('C', '');
+  const r = C.validateChord(new Set(), chord);
+  assert.equal(r.ok, false);
+  assert.equal(r.empty, true);
+});
+
+test('validateChord: exact PC match is ok', () => {
+  const chord = C.buildChord('C', '');               // {0, 4, 7}
+  const r = C.validateChord(new Set([60, 64, 67]), chord); // C4 E4 G4
+  assert.equal(r.ok, true);
+});
+
+test('validateChord: octave-shifted and doubled tones still ok', () => {
+  const chord = C.buildChord('C', '');
+  // C3(48) E4(64) G4(67) C4(60) — duplicated C across octaves
+  const r = C.validateChord(new Set([48, 60, 64, 67]), chord);
+  assert.equal(r.ok, true);
+});
+
+test('validateChord: extra tone fails', () => {
+  const chord = C.buildChord('C', '');
+  const r = C.validateChord(new Set([60, 63, 64, 67]), chord); // adds E♭
+  assert.equal(r.ok, false);
+  assert.ok(r.selectedPcsExtra.has(3));
+});
+
+test('validateChord: missing tone fails', () => {
+  const chord = C.buildChord('C', 'maj7'); // {0, 4, 7, 11}
+  const r = C.validateChord(new Set([60, 64, 67]), chord); // B missing
+  assert.equal(r.ok, false);
+  assert.ok(r.missingPcs.has(11));
+});
+
+test('validateChord: slash chord requires bass pc in lowest note', () => {
+  const chord = C.buildChord('C', '', 4); // C/E, bassPc = 4
+  // E3(52) G3(55) C4(60) — E is lowest -> ok
+  const r1 = C.validateChord(new Set([52, 55, 60]), chord);
+  assert.equal(r1.ok, true);
+  assert.equal(r1.bassWrong, false);
+  // C3(48) E3(52) G3(55) — C is lowest -> bass wrong
+  const r2 = C.validateChord(new Set([48, 52, 55]), chord);
+  assert.equal(r2.ok, false);
+  assert.equal(r2.bassWrong, true);
+});
+
+test('validateChord: root-position chord has bassWrong=null', () => {
+  const chord = C.buildChord('C', '');
+  const r = C.validateChord(new Set([60, 64, 67]), chord);
+  assert.equal(r.bassWrong, null);
+});
