@@ -126,3 +126,5 @@ function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760
 
 window.GrandStaff = GrandStaff;
 window.clefForPitch = clefForPitch;
+window.stepsFromC4 = stepsFromC4;
+window.trebleY = trebleY;
