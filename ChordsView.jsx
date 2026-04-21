@@ -2,6 +2,7 @@
 
 function ChordsView({ midiConnected, midiDeviceName }) {
   const [tier, setTier] = React.useState(1);
+  const [accidentals, setAccidentals] = React.useState(true);
   const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8, true));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [selected, setSelected] = React.useState(() => new Set());
@@ -16,14 +17,23 @@ function ChordsView({ midiConnected, midiDeviceName }) {
 
   const changeTier = (t) => {
     setTier(t);
-    setChords(window.makeChordPassage(t, 8, true));
+    setChords(window.makeChordPassage(t, 8, accidentals));
     setPlayheadIdx(0);
     setSelected(new Set());
     setFeedback(null);
   };
 
   const newPassage = () => {
-    setChords(window.makeChordPassage(tier, 8, true));
+    setChords(window.makeChordPassage(tier, 8, accidentals));
+    setPlayheadIdx(0);
+    setSelected(new Set());
+    setFeedback(null);
+  };
+
+  const toggleAccidentals = () => {
+    const next = !accidentals;
+    setAccidentals(next);
+    setChords(window.makeChordPassage(tier, 8, next));
     setPlayheadIdx(0);
     setSelected(new Set());
     setFeedback(null);
@@ -116,6 +126,12 @@ function ChordsView({ midiConnected, midiDeviceName }) {
               </button>
             ))}
           </div>
+          {tier === 1 && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
+              <div className={'toggle' + (accidentals ? ' on' : '')} onClick={toggleAccidentals} />
+              ♯♭
+            </label>
+          )}
         </div>
       </div>
 
