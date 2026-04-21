@@ -20,6 +20,7 @@ function App() {
 
   const content =
     view === 'practice' ? <PracticeView midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
+    view === 'chords'   ? <ChordsView   midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
     view === 'devices'  ? <DevicesView  midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
                           <SettingsView />;
 
@@ -39,7 +40,8 @@ function App() {
         <div className="m-scroll">{content}</div>
         <div className="m-tabbar">
           {[
-            { id: 'practice', label: 'Practice', glyph: '▶' },
+            { id: 'practice', label: 'Reading',  glyph: '♪' },
+            { id: 'chords',   label: 'Chords',   glyph: '♩' },
             { id: 'devices',  label: 'Devices',  glyph: '◌' },
             { id: 'settings', label: 'Settings', glyph: '⚙' },
           ].map(t => (
