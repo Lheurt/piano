@@ -1,0 +1,300 @@
+/* =============================================================
+   Fermata Design System — Colors & Type
+   -------------------------------------------------------------
+   Neutral, precise, paper-like. One accent.
+   ============================================================= */
+
+/* ---------- Webfonts ------------------------------------------------ */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+
+:root {
+  /* =========================================================
+     COLOR — Paper & Ink
+     ========================================================= */
+
+  /* Paper — warm off-whites */
+  --paper-0: #fbfaf7;
+  --paper-1: #f5f3ee;
+  --paper-2: #ecebe4;
+  --paper-3: #ddd9ce;
+
+  /* Ink — true near-black to mid-gray */
+  --ink-0:   #17161a;
+  --ink-1:   #3a3833;
+  --ink-2:   #6b6860;
+  --ink-3:   #9b978c;
+  --ink-4:   #c4c0b5;
+
+  /* Accent — editorial crimson */
+  --accent:        #8a2d2d;
+  --accent-soft:   #b85858;
+  --accent-wash:   #f3e7e5;
+  --accent-ink:    #5a1c1c;
+
+  /* Semantic */
+  --consonance: #2f5d3a;
+  --consonance-wash: #e4ede4;
+  --dissonance: #8a2d2d;
+  --dissonance-wash: var(--accent-wash);
+  --tension:    #8a6b1f;
+  --tension-wash: #f0eadc;
+  --info:       #2a4e6e;
+  --info-wash:  #e3ebf2;
+
+  /* Keyboard */
+  --key-white:         var(--paper-0);
+  --key-white-edge:    var(--ink-4);
+  --key-white-shadow:  #d9d4c4;
+  --key-black:         var(--ink-0);
+  --key-black-edge:    #000;
+  --key-active:        var(--accent-wash);
+  --key-active-edge:   var(--accent);
+  --key-correct:       var(--consonance-wash);
+  --key-incorrect:     var(--dissonance-wash);
+
+  /* Semantic aliases */
+  --bg:            var(--paper-0);
+  --bg-elevated:   var(--paper-1);
+  --bg-sunken:     var(--paper-2);
+  --fg:            var(--ink-0);
+  --fg-muted:      var(--ink-1);
+  --fg-subtle:     var(--ink-2);
+  --fg-hint:       var(--ink-3);
+  --fg-disabled:   var(--ink-4);
+  --rule:          var(--ink-4);
+  --rule-soft:     var(--paper-3);
+  --rule-strong:   var(--ink-2);
+
+  /* =========================================================
+     TYPE — Three families, strict roles
+     ========================================================= */
+
+  --font-serif: 'Newsreader', 'Iowan Old Style', 'Charter', Georgia, serif;
+  --font-sans:  'IBM Plex Sans', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-mono:  'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Weights */
+  --w-light:    300;
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+  --w-bold:     700;
+
+  /* Sizes */
+  --t-11: 0.6875rem;
+  --t-12: 0.75rem;
+  --t-13: 0.8125rem;
+  --t-14: 0.875rem;
+  --t-15: 0.9375rem;
+  --t-17: 1.0625rem;
+  --t-20: 1.25rem;
+  --t-24: 1.5rem;
+  --t-32: 2rem;
+  --t-44: 2.75rem;
+  --t-64: 4rem;
+
+  /* Line heights */
+  --lh-tight:   1.1;
+  --lh-snug:    1.25;
+  --lh-normal:  1.45;
+  --lh-prose:   1.65;
+
+  /* Tracking */
+  --track-tight:  -0.02em;
+  --track-normal: 0;
+  --track-loose:   0.02em;
+  --track-caps:    0.12em;
+
+  /* =========================================================
+     SPACING — 4px base
+     ========================================================= */
+  --s-0:  0;
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  24px;
+  --s-6:  32px;
+  --s-7:  48px;
+  --s-8:  64px;
+  --s-9:  96px;
+  --s-10: 128px;
+
+  /* =========================================================
+     BORDERS, RADII, SHADOWS
+     ========================================================= */
+  --radius-0: 0;
+  --radius-1: 2px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-full: 999px;
+
+  --hairline: 1px solid var(--rule);
+  --hairline-soft: 1px solid var(--rule-soft);
+  --hairline-strong: 1px solid var(--rule-strong);
+
+  --shadow-0: none;
+  --shadow-1: 0 1px 0 rgba(23,22,26,0.04);
+  --shadow-2: 0 1px 2px rgba(23,22,26,0.06), 0 0 0 1px rgba(23,22,26,0.04);
+  --shadow-key: 0 2px 0 var(--key-white-shadow), 0 0 0 1px var(--key-white-edge);
+
+  /* Motion */
+  --ease-out:    cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-base:   180ms;
+  --dur-slow:   280ms;
+}
+
+/* =============================================================
+   BASE
+   ============================================================= */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--t-14);
+  line-height: var(--lh-normal);
+  margin: 0;
+}
+
+/* =============================================================
+   SEMANTIC TYPE CLASSES
+   ============================================================= */
+
+.display, h1.display {
+  font-family: var(--font-serif);
+  font-size: var(--t-64);
+  font-weight: var(--w-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+}
+
+h1, .h1 {
+  font-family: var(--font-serif);
+  font-size: var(--t-44);
+  font-weight: var(--w-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+  margin: 0 0 var(--s-5);
+}
+
+h2, .h2 {
+  font-family: var(--font-serif);
+  font-size: var(--t-32);
+  font-weight: var(--w-regular);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+  margin: 0 0 var(--s-4);
+}
+
+h3, .h3 {
+  font-family: var(--font-serif);
+  font-size: var(--t-24);
+  font-weight: var(--w-medium);
+  line-height: var(--lh-snug);
+  color: var(--fg);
+  margin: 0 0 var(--s-3);
+}
+
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-size: var(--t-17);
+  font-weight: var(--w-semibold);
+  line-height: var(--lh-snug);
+  color: var(--fg);
+  margin: 0 0 var(--s-2);
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--t-11);
+  font-weight: var(--w-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--track-caps);
+  color: var(--fg-subtle);
+}
+
+p, .body {
+  font-family: var(--font-serif);
+  font-size: var(--t-17);
+  line-height: var(--lh-prose);
+  color: var(--fg-muted);
+  margin: 0 0 var(--s-4);
+}
+
+.body-sm {
+  font-family: var(--font-serif);
+  font-size: var(--t-15);
+  line-height: var(--lh-prose);
+  color: var(--fg-muted);
+}
+
+.ui, button, input, select, textarea, label {
+  font-family: var(--font-sans);
+  font-size: var(--t-14);
+  line-height: var(--lh-normal);
+  color: var(--fg);
+}
+
+.ui-sm { font-size: var(--t-13); }
+.ui-xs { font-size: var(--t-12); }
+
+code, kbd, samp, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  color: var(--fg);
+}
+
+.pitch {
+  font-family: var(--font-mono);
+  font-weight: var(--w-medium);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.interval {
+  font-family: var(--font-mono);
+  font-weight: var(--w-regular);
+  color: var(--fg-muted);
+}
+
+.chord {
+  font-family: var(--font-mono);
+  font-weight: var(--w-medium);
+  letter-spacing: 0.01em;
+}
+
+em, .italic {
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+.muted   { color: var(--fg-muted); }
+.subtle  { color: var(--fg-subtle); }
+.hint    { color: var(--fg-hint); }
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--fg-hint);
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--dur-base) var(--ease-out);
+}
+a:hover { text-decoration-color: currentColor; }
+
+a.accent {
+  color: var(--accent);
+  text-decoration-color: var(--accent-soft);
+}
