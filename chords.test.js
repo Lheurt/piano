@@ -135,3 +135,37 @@ test('makeChordPassage: tier 5+ produces some slash chords across many runs', ()
   assert.ok(slashCount > total * 0.15, 'slash rate too low: ' + slashCount + '/' + total);
   assert.ok(slashCount < total * 0.55, 'slash rate too high: ' + slashCount + '/' + total);
 });
+
+test('PROSE has an entry for every quality', () => {
+  for (const q of Object.keys(C.QUALITIES)) {
+    assert.ok(C.PROSE[q] && C.PROSE[q].length > 20, 'missing/short prose for ' + q);
+  }
+});
+
+test('INTERVAL_NAMES covers 0..11', () => {
+  for (let i = 0; i <= 11; i++) assert.ok(C.INTERVAL_NAMES[i], 'missing ' + i);
+});
+
+test('chordExplanation on Cmaj7 lists four intervals with correct tones', () => {
+  const chord = C.buildChord('C', 'maj7');
+  const e = C.chordExplanation(chord);
+  assert.equal(e.root, 'C');
+  assert.equal(e.qualityLabel, 'major 7');
+  assert.equal(e.qualitySymbol, 'maj7');
+  assert.equal(e.bass, null);
+  assert.deepEqual(e.intervals.map(i => i.tone), ['C', 'E', 'G', 'B']);
+  assert.deepEqual(e.intervals.map(i => i.name),
+    ['Root', 'Major 3rd', 'Perfect 5th', 'Major 7th']);
+});
+
+test('chordExplanation carries bass for slash chords', () => {
+  const chord = C.buildChord('C', '', 4); // C/E
+  const e = C.chordExplanation(chord);
+  assert.equal(e.bass, 'E');
+});
+
+test('chordExplanation on Fm uses flat spelling for A♭', () => {
+  const chord = C.buildChord('F', 'm');
+  const e = C.chordExplanation(chord);
+  assert.deepEqual(e.intervals.map(i => i.tone), ['F', 'A♭', 'C']);
+});

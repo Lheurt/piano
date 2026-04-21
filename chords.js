@@ -157,6 +157,68 @@
     return out;
   }
 
+  // Interval name per semitone offset. Used for both root-position tones
+  // and extended (>12) offsets. For offsets beyond one octave, we still use
+  // the simple-interval name (add9 -> the 2nd, m9 -> the 2nd, etc.) because
+  // our intervals array uses compact in-octave semitones.
+  var INTERVAL_NAMES = {
+    0:  'Root',
+    1:  'Minor 2nd',
+    2:  'Major 2nd',
+    3:  'Minor 3rd',
+    4:  'Major 3rd',
+    5:  'Perfect 4th',
+    6:  'Diminished 5th',
+    7:  'Perfect 5th',
+    8:  'Augmented 5th',
+    9:  'Major 6th',
+    10: 'Minor 7th',
+    11: 'Major 7th'
+  };
+
+  // One sentence of plain-English character for each quality. Kept deliberately
+  // short and pedagogical; paper-and-ink tone, no marketing voice.
+  var PROSE = {
+    ''     : 'The archetypal "bright" chord — root, major third, and perfect fifth stacked in thirds.',
+    'm'    : 'A major triad with the third lowered a semitone — darker, more introspective.',
+    '°'    : 'Two minor thirds stacked — an unstable, restless chord that wants to resolve.',
+    '+'    : 'Two major thirds stacked — symmetrical and suspended-feeling, common in whole-tone passages.',
+    'maj7' : 'Layers a major seventh on a major triad — smooth and resolved, characteristic of tonic in jazz and bossa nova.',
+    'm7'   : 'A minor triad with a minor seventh on top — warm, unresolved, the workhorse ii chord of jazz.',
+    '7'    : 'A major triad with a minor seventh — the "dominant" sound, leaning strongly toward resolution.',
+    'm7♭5' : 'Stacks a minor third, diminished fifth, and minor seventh — the ii chord of a minor key; also called half-diminished.',
+    '°7'   : 'Four tones evenly spaced by minor thirds — fully symmetrical, highly tense, resolves in multiple directions.',
+    'sus2' : 'Replaces the third with the second — neither major nor minor, with an open, unresolved quality.',
+    'sus4' : 'Replaces the third with the fourth — the same ambiguity as sus2 but denser, tending to resolve down to the third.',
+    'add9' : 'A major triad with the ninth (same pitch class as the 2nd) added on top — bright and sparkling.',
+    '6'    : 'A major triad with the sixth added — relaxed, nostalgic, common in early jazz and ballads.',
+    'm6'   : 'A minor triad with the major sixth added — melancholic but not dark, typical of cool-jazz voicings.',
+    '9'    : 'A dominant seventh with the ninth added — a richer dominant sound common in blues and funk.',
+    'maj9' : 'A major-seventh with the ninth added — lush and cinematic, an extended tonic flavour.',
+    'm9'   : 'A minor-seventh with the ninth added — soft and dreamy, characteristic of soul and modal jazz.',
+    '11'   : 'A dominant-ninth with the eleventh added; the third is omitted to avoid a clash — airy and modal.',
+    '13'   : 'A dominant-ninth with the thirteenth added (eleventh omitted) — the full-bodied dominant of jazz and gospel.'
+  };
+
+  function chordExplanation(chord) {
+    var q = QUALITIES[chord.quality];
+    var intervals = q.intervals.map(function (semi) {
+      return {
+        name: INTERVAL_NAMES[semi] || (semi + ' semitones'),
+        semitones: semi,
+        tone: toneName(chord.root, semi)
+      };
+    });
+    return {
+      root: chord.root,
+      qualityLabel: q.label,
+      qualitySymbol: chord.quality,
+      intervals: intervals,
+      prose: PROSE[chord.quality],
+      bass: chord.bass // null when not a slash chord
+    };
+  }
+
   var api = {
     QUALITIES: QUALITIES,
     ROOT_SPELLINGS: ROOT_SPELLINGS,
@@ -172,6 +234,10 @@
   api.buildTierPool = buildTierPool;
   api.buildChord = buildChord;
   api.makeChordPassage = makeChordPassage;
+
+  api.INTERVAL_NAMES = INTERVAL_NAMES;
+  api.PROSE = PROSE;
+  api.chordExplanation = chordExplanation;
 
   // Populate both environments.
   if (typeof module !== 'undefined' && module.exports) {
