@@ -56,6 +56,107 @@
     return set.slice().sort(function (a, b) { return a - b; });
   }
 
+  // Tier pools are cumulative. Each entry lists the quality symbols that first
+  // appear at this tier; effective pool at tier N is union of tiers 1..N.
+  var TIER_NEW_QUALITIES = {
+    1: ['', 'm'],
+    2: ['°', '+'],
+    3: ['maj7', 'm7', '7', 'm7♭5', '°7'],
+    4: ['sus2', 'sus4', 'add9', '6', 'm6'],
+    5: [], // no new qualities; introduces inversions
+    6: ['9', 'maj9', 'm9', '11', '13']
+  };
+
+  function qualitiesForTier(tier) {
+    var out = [];
+    for (var t = 1; t <= tier; t++) out = out.concat(TIER_NEW_QUALITIES[t]);
+    return out;
+  }
+
+  // Tier 1 root pool is white keys only; tiers 2+ are all 12 chromatic roots.
+  function rootPcsForTier(tier) {
+    return tier === 1 ? WHITE_ROOT_PCS.slice() : [0,1,2,3,4,5,6,7,8,9,10,11];
+  }
+
+  // Tier-1 accidental-free filter: keep only chords whose PC set avoids
+  // black-key PCs (1, 3, 6, 8, 10).
+  var BLACK_PCS = [1, 3, 6, 8, 10];
+  function isAccidentalFree(rootName, qualitySymbol) {
+    var pcs = pitchClassesFor(rootName, qualitySymbol);
+    return pcs.every(function (pc) { return BLACK_PCS.indexOf(pc) === -1; });
+  }
+
+  // Build the raw pool of {rootName, qualitySymbol} for a tier.
+  function buildTierPool(tier, accidentalsOn) {
+    var qualities = qualitiesForTier(tier);
+    var rootPcs = rootPcsForTier(tier);
+    var pool = [];
+    qualities.forEach(function (q) {
+      rootPcs.forEach(function (pc) {
+        var rootName = ROOT_SPELLINGS[pc];
+        if (tier === 1 && !accidentalsOn && !isAccidentalFree(rootName, q)) return;
+        pool.push({ rootName: rootName, qualitySymbol: q });
+      });
+    });
+    return pool;
+  }
+
+  // Build a chord entry, optionally as a slash chord with the given bass offset.
+  function buildChord(rootName, qualitySymbol, bassOffset /* optional semitone */) {
+    var q = QUALITIES[qualitySymbol];
+    var rootPc = pitchClassFromRoot(rootName);
+    var pcs = pitchClassesFor(rootName, qualitySymbol);
+    var bass = null;
+    var bassPc = null;
+    var displayName = rootName + qualitySymbol;
+    if (typeof bassOffset === 'number') {
+      bass = toneName(rootName, bassOffset);
+      bassPc = (rootPc + bassOffset) % 12;
+      displayName = displayName + '/' + bass;
+    }
+    return {
+      root: rootName,
+      quality: qualitySymbol,
+      bass: bass,
+      rootPitchClass: rootPc,
+      bassPitchClass: bassPc,
+      pitchClasses: pcs,
+      displayName: displayName,
+      status: 'pending'
+    };
+  }
+
+  // Return `count` chord entries for a given tier. At tier >= 5, ~1/3 of draws
+  // are converted to a slash chord (bass = a non-root tone).
+  // No two consecutive entries are identical (by displayName).
+  function makeChordPassage(tier, count, accidentalsOn) {
+    count = count || 8;
+    if (tier === undefined) tier = 1;
+    var pool = buildTierPool(tier, accidentalsOn);
+    if (pool.length === 0) throw new Error('Empty tier pool for tier ' + tier);
+    var out = [];
+    var lastName = null;
+    var guard = 0;
+    while (out.length < count) {
+      guard++;
+      if (guard > count * 50) throw new Error('Passage generation runaway');
+      var pick = pool[Math.floor(Math.random() * pool.length)];
+      var q = QUALITIES[pick.qualitySymbol];
+      var useInversion = tier >= 5 && q.intervals.length > 2 && Math.random() < 0.33;
+      var bassOffset = undefined;
+      if (useInversion) {
+        // Non-root intervals, excluding 0.
+        var nonRoot = q.intervals.filter(function (i) { return i !== 0; });
+        bassOffset = nonRoot[Math.floor(Math.random() * nonRoot.length)];
+      }
+      var chord = buildChord(pick.rootName, pick.qualitySymbol, bassOffset);
+      if (chord.displayName === lastName) continue;
+      out.push(chord);
+      lastName = chord.displayName;
+    }
+    return out;
+  }
+
   var api = {
     QUALITIES: QUALITIES,
     ROOT_SPELLINGS: ROOT_SPELLINGS,
@@ -64,6 +165,13 @@
     toneName: toneName,
     pitchClassesFor: pitchClassesFor
   };
+
+  api.TIER_NEW_QUALITIES = TIER_NEW_QUALITIES;
+  api.qualitiesForTier = qualitiesForTier;
+  api.rootPcsForTier = rootPcsForTier;
+  api.buildTierPool = buildTierPool;
+  api.buildChord = buildChord;
+  api.makeChordPassage = makeChordPassage;
 
   // Populate both environments.
   if (typeof module !== 'undefined' && module.exports) {

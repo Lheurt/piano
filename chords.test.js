@@ -54,3 +54,84 @@ test('pitchClassesFor computes a sorted PC set', () => {
   // F minor = F A♭ C = PCs 5, 8, 0 -> sorted 0, 5, 8
   assert.deepEqual(C.pitchClassesFor('F', 'm'),   [0, 5, 8]);
 });
+
+test('qualitiesForTier is cumulative', () => {
+  assert.deepEqual(C.qualitiesForTier(1), ['', 'm']);
+  assert.deepEqual(C.qualitiesForTier(2), ['', 'm', '°', '+']);
+  // Tier 6 includes every quality
+  assert.equal(C.qualitiesForTier(6).length, 19);
+});
+
+test('rootPcsForTier: tier 1 is white keys, tier 2+ is chromatic', () => {
+  assert.deepEqual(C.rootPcsForTier(1), [0, 2, 4, 5, 7, 9, 11]);
+  assert.equal(C.rootPcsForTier(2).length, 12);
+  assert.equal(C.rootPcsForTier(6).length, 12);
+});
+
+test('tier 1 pool with accidentals off = {C, F, G, Dm, Em, Am}', () => {
+  const pool = C.buildTierPool(1, false);
+  const names = pool.map(p => p.rootName + p.qualitySymbol).sort();
+  assert.deepEqual(names, ['Am', 'C', 'Dm', 'Em', 'F', 'G'].sort());
+});
+
+test('tier 1 pool with accidentals on = 14 (7 roots x 2 qualities)', () => {
+  assert.equal(C.buildTierPool(1, true).length, 14);
+});
+
+test('buildChord root position has bass=null', () => {
+  const c = C.buildChord('C', 'maj7');
+  assert.equal(c.bass, null);
+  assert.equal(c.displayName, 'Cmaj7');
+  assert.deepEqual(c.pitchClasses, [0, 4, 7, 11]);
+});
+
+test('buildChord with bass offset sets slash-chord fields', () => {
+  const c = C.buildChord('C', '', 4); // C major, E in bass
+  assert.equal(c.bass, 'E');
+  assert.equal(c.bassPitchClass, 4);
+  assert.equal(c.displayName, 'C/E');
+});
+
+test('makeChordPassage returns `count` entries with pending status', () => {
+  const p = C.makeChordPassage(1, 8, true);
+  assert.equal(p.length, 8);
+  for (const c of p) assert.equal(c.status, 'pending');
+});
+
+test('makeChordPassage: tier 1 accidentals-off only draws from 6-chord pool', () => {
+  const allowed = new Set(['C', 'F', 'G', 'Dm', 'Em', 'Am']);
+  for (let i = 0; i < 20; i++) {
+    const p = C.makeChordPassage(1, 8, false);
+    for (const c of p) assert.ok(allowed.has(c.displayName), 'unexpected: ' + c.displayName);
+  }
+});
+
+test('makeChordPassage: no two consecutive entries share a displayName', () => {
+  for (let i = 0; i < 10; i++) {
+    const p = C.makeChordPassage(3, 8, true);
+    for (let j = 1; j < p.length; j++) {
+      assert.notEqual(p[j].displayName, p[j-1].displayName);
+    }
+  }
+});
+
+test('makeChordPassage: no slash chords below tier 5', () => {
+  for (let i = 0; i < 10; i++) {
+    const p = C.makeChordPassage(4, 8, true);
+    for (const c of p) assert.equal(c.bass, null);
+  }
+});
+
+test('makeChordPassage: tier 5+ produces some slash chords across many runs', () => {
+  let slashCount = 0;
+  let total = 0;
+  for (let i = 0; i < 30; i++) {
+    for (const c of C.makeChordPassage(5, 8)) {
+      total++;
+      if (c.bass) slashCount++;
+    }
+  }
+  // ~33% expected; be loose to avoid flakiness.
+  assert.ok(slashCount > total * 0.15, 'slash rate too low: ' + slashCount + '/' + total);
+  assert.ok(slashCount < total * 0.55, 'slash rate too high: ' + slashCount + '/' + total);
+});
