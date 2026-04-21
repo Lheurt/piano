@@ -139,7 +139,7 @@ function ChordsView({ midiConnected, midiDeviceName }) {
         <div className="spacer" />
         <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone || !!feedback}>Clear</button>
         <button className="btn btn-primary btn-sm"   onClick={check}          disabled={isDone || !!feedback || selected.size === 0}>Check</button>
-        <button className="btn btn-secondary btn-sm" onClick={newPassage}>New passage</button>
+        <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>New passage</button>
       </div>
     </div>
   );
