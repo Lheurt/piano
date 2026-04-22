@@ -68,14 +68,8 @@ test('rootPcsForTier: tier 1 is white keys, tier 2+ is chromatic', () => {
   assert.equal(C.rootPcsForTier(6).length, 12);
 });
 
-test('tier 1 pool with accidentals off = {C, F, G, Dm, Em, Am}', () => {
-  const pool = C.buildTierPool(1, false);
-  const names = pool.map(p => p.rootName + p.qualitySymbol).sort();
-  assert.deepEqual(names, ['Am', 'C', 'Dm', 'Em', 'F', 'G'].sort());
-});
-
-test('tier 1 pool with accidentals on = 14 (7 roots x 2 qualities)', () => {
-  assert.equal(C.buildTierPool(1, true).length, 14);
+test('tier 1 pool = 14 (7 white-key roots x 2 qualities)', () => {
+  assert.equal(C.buildTierPool(1).length, 14);
 });
 
 test('buildChord root position has bass=null', () => {
@@ -93,22 +87,14 @@ test('buildChord with bass offset sets slash-chord fields', () => {
 });
 
 test('makeChordPassage returns `count` entries with pending status', () => {
-  const p = C.makeChordPassage(1, 8, true);
+  const p = C.makeChordPassage(1, 8);
   assert.equal(p.length, 8);
   for (const c of p) assert.equal(c.status, 'pending');
 });
 
-test('makeChordPassage: tier 1 accidentals-off only draws from 6-chord pool', () => {
-  const allowed = new Set(['C', 'F', 'G', 'Dm', 'Em', 'Am']);
-  for (let i = 0; i < 20; i++) {
-    const p = C.makeChordPassage(1, 8, false);
-    for (const c of p) assert.ok(allowed.has(c.displayName), 'unexpected: ' + c.displayName);
-  }
-});
-
 test('makeChordPassage: no two consecutive entries share a displayName', () => {
   for (let i = 0; i < 10; i++) {
-    const p = C.makeChordPassage(3, 8, true);
+    const p = C.makeChordPassage(3, 8);
     for (let j = 1; j < p.length; j++) {
       assert.notEqual(p[j].displayName, p[j-1].displayName);
     }
@@ -117,7 +103,7 @@ test('makeChordPassage: no two consecutive entries share a displayName', () => {
 
 test('makeChordPassage: no slash chords below tier 5', () => {
   for (let i = 0; i < 10; i++) {
-    const p = C.makeChordPassage(4, 8, true);
+    const p = C.makeChordPassage(4, 8);
     for (const c of p) assert.equal(c.bass, null);
   }
 });

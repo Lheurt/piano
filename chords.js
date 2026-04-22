@@ -78,24 +78,14 @@
     return tier === 1 ? WHITE_ROOT_PCS.slice() : [0,1,2,3,4,5,6,7,8,9,10,11];
   }
 
-  // Tier-1 accidental-free filter: keep only chords whose PC set avoids
-  // black-key PCs (1, 3, 6, 8, 10).
-  var BLACK_PCS = [1, 3, 6, 8, 10];
-  function isAccidentalFree(rootName, qualitySymbol) {
-    var pcs = pitchClassesFor(rootName, qualitySymbol);
-    return pcs.every(function (pc) { return BLACK_PCS.indexOf(pc) === -1; });
-  }
-
   // Build the raw pool of {rootName, qualitySymbol} for a tier.
-  function buildTierPool(tier, accidentalsOn) {
+  function buildTierPool(tier) {
     var qualities = qualitiesForTier(tier);
     var rootPcs = rootPcsForTier(tier);
     var pool = [];
     qualities.forEach(function (q) {
       rootPcs.forEach(function (pc) {
-        var rootName = ROOT_SPELLINGS[pc];
-        if (tier === 1 && !accidentalsOn && !isAccidentalFree(rootName, q)) return;
-        pool.push({ rootName: rootName, qualitySymbol: q });
+        pool.push({ rootName: ROOT_SPELLINGS[pc], qualitySymbol: q });
       });
     });
     return pool;
@@ -129,10 +119,10 @@
   // Return `count` chord entries for a given tier. At tier >= 5, ~1/3 of draws
   // are converted to a slash chord (bass = a non-root tone).
   // No two consecutive entries are identical (by displayName).
-  function makeChordPassage(tier, count, accidentalsOn) {
+  function makeChordPassage(tier, count) {
     count = count || 8;
     if (tier === undefined) tier = 1;
-    var pool = buildTierPool(tier, accidentalsOn);
+    var pool = buildTierPool(tier);
     if (pool.length === 0) throw new Error('Empty tier pool for tier ' + tier);
     var out = [];
     var lastName = null;

@@ -19,9 +19,10 @@ function App() {
   }, []);
 
   const content =
-    view === 'practice' ? <PracticeView midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
-    view === 'chords'   ? <ChordsView   midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
+    view === 'practice' ? <PracticeView /> :
+    view === 'chords'   ? <ChordsView /> :
     view === 'devices'  ? <DevicesView  midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
+    view === 'help'     ? <HelpView /> :
                           <SettingsView />;
 
   if (narrow) {
@@ -44,6 +45,7 @@ function App() {
             { id: 'chords',   label: 'Chords',   glyph: '♩' },
             { id: 'devices',  label: 'Devices',  glyph: '◌' },
             { id: 'settings', label: 'Settings', glyph: '⚙' },
+            { id: 'help',     label: 'Help',     glyph: '?' },
           ].map(t => (
             <button key={t.id}
               className={'m-tab' + (view === t.id ? ' active' : '')}

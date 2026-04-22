@@ -6,7 +6,7 @@
 const WHITE = ['C','D','E','F','G','A','B'];
 
 function stepsFromC4(pitch) {
-  const m = pitch.match(/^([A-G])([#b]?)(\d)$/);
+  const m = pitch.match(/^([A-G])([#b♯♭]?)(\d)$/);
   if (!m) return 0;
   const [_, letter, , oct] = m;
   return (parseInt(oct, 10) - 4) * 7 + WHITE.indexOf(letter);

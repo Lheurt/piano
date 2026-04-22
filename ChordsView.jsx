@@ -1,5 +1,49 @@
 // ChordsView.jsx — chord identification practice.
 
+const TIER_DESCRIPTIONS = [
+  { tier: 1, title: 'Major & minor triads',   body: 'Roots: C, D, E, F, G, A, B (white keys). Qualities: major and minor.' },
+  { tier: 2, title: 'Diminished & augmented', body: 'Adds ° (diminished) and + (augmented) triads. All 12 roots, including sharps and flats.' },
+  { tier: 3, title: 'Seventh chords',         body: 'Adds maj7, m7, 7 (dominant), m7♭5 (half-diminished), and °7 (fully diminished).' },
+  { tier: 4, title: 'Suspensions & colorations', body: 'Adds sus2, sus4, add9, 6, and m6.' },
+  { tier: 5, title: 'Inversions',             body: 'Same qualities as tier 4, but ~1/3 of chords now have a non-root bass note (slash chords like C/E).' },
+  { tier: 6, title: 'Extended chords',        body: 'Adds 9, maj9, m9, 11, and 13 — chords that reach beyond the octave.' },
+];
+
+function TierInfoPanel({ onClose }) {
+  return (
+    <div className="tier-info-panel">
+      <button className="tier-info-close" onClick={onClose} aria-label="Close">×</button>
+      <div className="tier-info-head">Difficulty tiers</div>
+      <div className="tier-info-body">
+        {TIER_DESCRIPTIONS.map(t => (
+          <div className="tier-info-row" key={t.tier}>
+            <span className="tier-info-num">{t.tier}</span>
+            <div className="tier-info-text">
+              <div className="tier-info-title">{t.title}</div>
+              <div className="tier-info-body-text">{t.body}</div>
+            </div>
+          </div>
+        ))}
+        <div className="tier-info-note">Each tier is cumulative — higher tiers include everything from lower tiers.</div>
+      </div>
+    </div>
+  );
+}
+
+function CheckBadge() {
+  return (
+    <svg className="check-badge" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
+      <circle className="check-badge-circle" cx="16" cy="16" r="14"
+              fill="none" stroke="currentColor" strokeWidth="2.5"
+              pathLength="100" strokeDasharray="100" />
+      <path className="check-badge-mark" d="M10 16.5 L14.5 21 L23 12"
+            fill="none" stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            pathLength="100" strokeDasharray="100" />
+    </svg>
+  );
+}
+
 function ChordHintPanel({ chord }) {
   const e = window.chordExplanation(chord);
   return (
@@ -36,16 +80,16 @@ function ChordHintPanel({ chord }) {
   );
 }
 
-function ChordsView({ midiConnected, midiDeviceName }) {
+function ChordsView() {
   const [tier, setTier] = React.useState(1);
-  const [accidentals, setAccidentals] = React.useState(true);
-  const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8, true));
+  const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [selected, setSelected] = React.useState(() => new Set());
   const [muted, setMuted] = React.useState(false);
   // When truthy, this is the latest validateChord() result; used to render feedback.
   const [feedback, setFeedback] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
+  const [showTierInfo, setShowTierInfo] = React.useState(false);
 
   const isDone = playheadIdx >= chords.length;
   const current = chords[playheadIdx];
@@ -54,26 +98,19 @@ function ChordsView({ midiConnected, midiDeviceName }) {
 
   const changeTier = (t) => {
     setTier(t);
-    setChords(window.makeChordPassage(t, 8, accidentals));
+    setChords(window.makeChordPassage(t, 8));
     setPlayheadIdx(0);
     setSelected(new Set());
     setFeedback(null);
+    setShowHint(false);
   };
 
   const newPassage = () => {
-    setChords(window.makeChordPassage(tier, 8, accidentals));
+    setChords(window.makeChordPassage(tier, 8));
     setPlayheadIdx(0);
     setSelected(new Set());
     setFeedback(null);
-  };
-
-  const toggleAccidentals = () => {
-    const next = !accidentals;
-    setAccidentals(next);
-    setChords(window.makeChordPassage(tier, 8, next));
-    setPlayheadIdx(0);
-    setSelected(new Set());
-    setFeedback(null);
+    setShowHint(false);
   };
 
   const onKey = (pitch) => {
@@ -98,6 +135,15 @@ function ChordsView({ midiConnected, midiDeviceName }) {
   const clearSelection = () => {
     if (feedback) return;
     setSelected(new Set());
+    setShowHint(false);
+  };
+
+  const playSelection = () => {
+    if (selected.size === 0) return;
+    const sorted = Array.from(selected).sort((a, b) => a - b);
+    sorted.forEach((midi, i) => {
+      setTimeout(() => window.playNote(window.midiToName(midi)), i * 18);
+    });
   };
 
   const check = () => {
@@ -110,6 +156,7 @@ function ChordsView({ midiConnected, midiDeviceName }) {
           i === playheadIdx ? { ...c, status: 'correct' } : c
         ));
         setPlayheadIdx(i => Math.min(i + 1, chords.length));
+        setShowHint(false);
       } else {
         setChords(prev => prev.map((c, i) =>
           i === playheadIdx ? { ...c, status: 'pending' } : c
@@ -169,10 +216,13 @@ function ChordsView({ midiConnected, midiDeviceName }) {
           </div>
         </div>
         <div className="hud-right">
-          <div className={'device ' + (midiConnected ? 'connected' : 'disconnected')}>
-            <span className="device-dot" />
-            {midiConnected ? (midiDeviceName || 'MIDI device') : 'No MIDI device'}
-          </div>
+          <span className="tier-label">Tier</span>
+          <button
+            className={'tier-info-btn' + (showTierInfo ? ' on' : '')}
+            onClick={() => setShowTierInfo(v => !v)}
+            aria-label="About difficulty tiers"
+            title="About difficulty tiers"
+          >?</button>
           <div className="clef-toggle">
             {[1, 2, 3, 4, 5, 6].map(t => (
               <button key={t}
@@ -182,34 +232,28 @@ function ChordsView({ midiConnected, midiDeviceName }) {
               </button>
             ))}
           </div>
-          {tier === 1 && (
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
-              <div className={'toggle' + (accidentals ? ' on' : '')} onClick={toggleAccidentals} />
-              ♯♭
-            </label>
-          )}
         </div>
       </div>
 
-      <div className="chord-prompt-wrap">
-        <div className="chord-prompt">
-          {isDone ? (
-            <span className="chord-prompt-done mono">
-              {correct} of {chords.length} correct
-            </span>
-          ) : (
+      {showTierInfo && <TierInfoPanel onClose={() => setShowTierInfo(false)} />}
+
+      <div className={'chord-prompt' + (feedback && feedback.ok ? ' correct' : '')}>
+        {isDone ? (
+          <span className="chord-prompt-done mono">
+            {correct} of {chords.length} correct
+          </span>
+        ) : (
+          <>
             <span className="chord-prompt-name">{current.displayName}</span>
-          )}
-        </div>
-        {!isDone && current && (
-          <button
-            className={'hint-toggle' + (showHint ? ' on' : '')}
-            onClick={() => setShowHint(h => !h)}
-            title={showHint ? 'Hide hint' : 'Show hint'}
-          >
-            ?
-          </button>
+            <button
+              className={'explain-link' + (showHint ? ' on' : '')}
+              onClick={() => setShowHint(h => !h)}
+            >
+              {showHint ? 'Hide explanation' : 'Explain this chord'}
+            </button>
+          </>
         )}
+        {feedback && feedback.ok && <CheckBadge />}
       </div>
 
       {showHint && !isDone && current && <ChordHintPanel chord={current} />}
@@ -222,6 +266,7 @@ function ChordsView({ midiConnected, midiDeviceName }) {
           Mute
         </label>
         <div className="spacer" />
+        <button className="btn btn-secondary btn-sm" onClick={playSelection}  disabled={isDone || !!feedback || selected.size === 0}>▸ Play</button>
         <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone || !!feedback}>Clear</button>
         <button className="btn btn-primary btn-sm"   onClick={check}          disabled={isDone || !!feedback || selected.size === 0}>Check</button>
         <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>New passage</button>

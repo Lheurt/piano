@@ -25,6 +25,9 @@ function SideNav({ view, setView }) {
       { id: 'devices',  label: 'Devices' },
       { id: 'settings', label: 'Settings' },
     ]},
+    { group: 'Reference', entries: [
+      { id: 'help',     label: 'Help & legend' },
+    ]},
   ];
   return (
     <nav className="shell-nav">
