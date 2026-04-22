@@ -18,11 +18,15 @@ function Header({ midiConnected, midiDeviceName }) {
 function SideNav({ view, setView }) {
   const items = [
     { group: 'Study', entries: [
-      { id: 'practice', label: 'Practice' },
+      { id: 'practice', label: 'Sight-reading' },
+      { id: 'chords',   label: 'Chords' },
     ]},
     { group: 'Setup', entries: [
       { id: 'devices',  label: 'Devices' },
       { id: 'settings', label: 'Settings' },
+    ]},
+    { group: 'Reference', entries: [
+      { id: 'help',     label: 'Help & legend' },
     ]},
   ];
   return (

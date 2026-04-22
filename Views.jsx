@@ -38,7 +38,7 @@ function useNarrow() {
   return narrow;
 }
 
-function PracticeView({ midiConnected, midiDeviceName }) {
+function PracticeView() {
   const narrow = useNarrow();
   const [clef, setClef] = React.useState('grand');
   const [accidentals, setAccidentals] = React.useState(false);
@@ -122,10 +122,6 @@ function PracticeView({ midiConnected, midiDeviceName }) {
           </div>
         </div>
         <div className="hud-right">
-          <div className={'device ' + (midiConnected ? 'connected' : 'disconnected')}>
-            <span className="device-dot" />
-            {midiConnected ? (midiDeviceName || 'MIDI device') : 'No MIDI device'}
-          </div>
           <div className="clef-toggle">
             {['grand','treble','bass'].map(c => (
               <button key={c}
@@ -305,4 +301,119 @@ function SettingsView() {
   );
 }
 
-Object.assign(window, { PracticeView, DevicesView, SettingsView, PaneHeader });
+/* ---------- Help & legend ---------- */
+function HelpView() {
+  return (
+    <div className="pane help-pane">
+      <PaneHeader
+        eyebrow="Reference"
+        title="Help & legend"
+        sub="How the sections work and what the notation means."
+      />
+
+      <h3 className="help-h">How the sections work</h3>
+
+      <div className="help-block">
+        <div className="help-block-title">Sight-reading</div>
+        <p>Read the note on the staff, then play it on the keyboard (on-screen or via MIDI). Pick a clef — Grand, Treble, or Bass — and toggle ♯♭ to include accidentals. The playhead advances when your note is correct.</p>
+      </div>
+
+      <div className="help-block">
+        <div className="help-block-title">Chords</div>
+        <p>Play the named chord by selecting its notes on the keyboard (any octave) and pressing <em>Check</em>. Pick a tier (1–6) to set difficulty; the <span className="help-inline-btn">?</span> next to the tier buttons explains each level. The <span className="help-inline-btn">?</span> next to the chord name opens a hint for that specific chord. Slash chords (e.g., <span className="mono">C/E</span>) require the bass note to be the lowest pitch you play.</p>
+      </div>
+
+      <div className="help-block">
+        <div className="help-block-title">Devices</div>
+        <p>Connection status and troubleshooting for your MIDI keyboard. Input is treated identically whether you tap on screen or play a physical key.</p>
+      </div>
+
+      <div className="help-block">
+        <div className="help-block-title">Settings</div>
+        <p>Display, note names, and evaluation strictness.</p>
+      </div>
+
+      <h3 className="help-h">Chord quality symbols</h3>
+      <p className="help-lead">Shown as a suffix after the root note — e.g., <span className="mono">C</span>, <span className="mono">Cm</span>, <span className="mono">Cmaj7</span>.</p>
+      <div className="legend-grid">
+        {[
+          ['(none)', 'major',                  'C'],
+          ['m',      'minor',                  'Cm'],
+          ['°',      'diminished',             'C°'],
+          ['+',      'augmented',              'C+'],
+          ['maj7',   'major seventh',          'Cmaj7'],
+          ['m7',     'minor seventh',          'Cm7'],
+          ['7',      'dominant seventh',       'C7'],
+          ['m7♭5',   'half-diminished',        'Cm7♭5'],
+          ['°7',     'fully diminished 7',     'C°7'],
+          ['sus2',   'suspended 2nd',          'Csus2'],
+          ['sus4',   'suspended 4th',          'Csus4'],
+          ['add9',   'added 9th',              'Cadd9'],
+          ['6',      'major sixth',            'C6'],
+          ['m6',     'minor sixth',            'Cm6'],
+          ['9',      'dominant ninth',         'C9'],
+          ['maj9',   'major ninth',            'Cmaj9'],
+          ['m9',     'minor ninth',            'Cm9'],
+          ['11',     'eleventh',               'C11'],
+          ['13',     'thirteenth',             'C13'],
+        ].map(([sym, name, ex], i) => (
+          <div className="legend-row" key={i}>
+            <span className="legend-sym mono">{sym}</span>
+            <span className="legend-name">{name}</span>
+            <span className="legend-ex mono">{ex}</span>
+          </div>
+        ))}
+      </div>
+
+      <h3 className="help-h">Other notation</h3>
+      <div className="legend-grid">
+        <div className="legend-row">
+          <span className="legend-sym mono">X/Y</span>
+          <span className="legend-name">slash chord — chord X with Y as the lowest note</span>
+          <span className="legend-ex mono">C/E</span>
+        </div>
+        <div className="legend-row">
+          <span className="legend-sym mono">♯</span>
+          <span className="legend-name">sharp — raised a semitone</span>
+          <span className="legend-ex mono">F♯</span>
+        </div>
+        <div className="legend-row">
+          <span className="legend-sym mono">♭</span>
+          <span className="legend-name">flat — lowered a semitone</span>
+          <span className="legend-ex mono">B♭</span>
+        </div>
+      </div>
+
+      <h3 className="help-h">Keyboard highlights</h3>
+      <div className="legend-grid">
+        <div className="legend-row">
+          <span className="legend-swatch swatch-selected" />
+          <span className="legend-name"><strong>Selected</strong> — a key you picked for the current chord</span>
+          <span />
+        </div>
+        <div className="legend-row">
+          <span className="legend-swatch swatch-active" />
+          <span className="legend-name"><strong>Target / hint</strong> — note the app is asking for, or revealing as a hint</span>
+          <span />
+        </div>
+        <div className="legend-row">
+          <span className="legend-swatch swatch-correct" />
+          <span className="legend-name"><strong>Correct</strong> — your note matches the target</span>
+          <span />
+        </div>
+        <div className="legend-row">
+          <span className="legend-swatch swatch-incorrect" />
+          <span className="legend-name"><strong>Incorrect</strong> — your note does not belong to the chord</span>
+          <span />
+        </div>
+        <div className="legend-row">
+          <span className="legend-swatch swatch-missing" />
+          <span className="legend-name"><strong>Missing</strong> — a tone from the chord you did not play</span>
+          <span />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { PracticeView, DevicesView, SettingsView, HelpView, PaneHeader });

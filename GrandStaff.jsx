@@ -6,7 +6,7 @@
 const WHITE = ['C','D','E','F','G','A','B'];
 
 function stepsFromC4(pitch) {
-  const m = pitch.match(/^([A-G])([#b]?)(\d)$/);
+  const m = pitch.match(/^([A-G])([#b♯♭]?)(\d)$/);
   if (!m) return 0;
   const [_, letter, , oct] = m;
   return (parseInt(oct, 10) - 4) * 7 + WHITE.indexOf(letter);
@@ -126,3 +126,5 @@ function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760
 
 window.GrandStaff = GrandStaff;
 window.clefForPitch = clefForPitch;
+window.stepsFromC4 = stepsFromC4;
+window.trebleY = trebleY;
