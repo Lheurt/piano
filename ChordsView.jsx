@@ -201,14 +201,14 @@ function ChordsView() {
     setMicCheckStatus('listening');
     let buf;
     try {
-      buf = await window.fermataMic.captureWindow(500);
+      buf = await window.fermataMic.captureWindow(1500);
     } catch (err) {
       console.error('mic capture failed:', err);
       setMicCheckStatus('error');
       setTimeout(() => setMicCheckStatus(null), 1500);
       return;
     }
-    setMicCheckStatus('loading');
+    setMicCheckStatus('analyzing');
     let detectedMidis;
     try {
       detectedMidis = await window.basicPitchAnalyzeWindow(
@@ -220,8 +220,6 @@ function ChordsView() {
       setTimeout(() => setMicCheckStatus(null), 1500);
       return;
     }
-    setMicCheckStatus('analyzing');
-
     if (!detectedMidis || detectedMidis.size === 0) {
       // No notes detected → present as a normal failure with empty selection.
       setSelected(new Set());
@@ -267,7 +265,7 @@ function ChordsView() {
     if (!window.micStore) return;
 
     const SILENCE_THRESHOLD = 0.012;
-    const SETTLE_MS = 450;
+    const SETTLE_MS = 200;
 
     let phase = 'silent'; // 'silent' | 'rising' | 'analyzing'
     let timer = null;
@@ -425,7 +423,6 @@ function ChordsView() {
           }
         >
           {micCheckStatus === 'listening' ? 'Listening…' :
-           micCheckStatus === 'loading'   ? 'Loading detector…' :
            micCheckStatus === 'analyzing' ? 'Analyzing…' :
            micCheckStatus === 'error'     ? 'Error — try again' :
            micEnabled                      ? 'Play chord' :

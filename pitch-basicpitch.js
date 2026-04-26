@@ -137,7 +137,11 @@
       );
     }
 
-    const events = toEvents(frames, onsets, contours, 0.5, 0.3);
+    // onsetThresh, frameThresh: Spotify's defaults (0.5 / 0.3) are tuned for
+    // clean studio recordings and tend to miss middle voices on piano chords
+    // captured via a laptop mic. Lowering both — especially onset — surfaces
+    // the third note in triads at the cost of slightly more false positives.
+    const events = toEvents(frames, onsets, contours, 0.3, 0.2);
     log('outputToNotesPoly produced', events ? events.length : 0, 'note events');
 
     const set = new Set();
