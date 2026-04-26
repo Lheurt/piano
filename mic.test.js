@@ -185,3 +185,54 @@ test('createMic: enable() handles missing getUserMedia (no mic hardware)', async
     assert.match(s.error || '', /not supported|unavailable|microphone/i);
   } finally { globalThis.navigator = originalNavigator; }
 });
+
+const { createNoteConfirmer } = require('./mic.js');
+
+test('createNoteConfirmer: fires after 3 consecutive equal frames', () => {
+  const fired = [];
+  const c = createNoteConfirmer({ onNote: (m) => fired.push(m) });
+  c.push(60);
+  c.push(60);
+  assert.deepEqual(fired, []);
+  c.push(60);
+  assert.deepEqual(fired, [60]);
+});
+
+test('createNoteConfirmer: null frame resets buffer', () => {
+  const fired = [];
+  const c = createNoteConfirmer({ onNote: (m) => fired.push(m) });
+  c.push(60);
+  c.push(60);
+  c.push(null);
+  c.push(60);
+  c.push(60);
+  assert.deepEqual(fired, []);
+  c.push(60);
+  assert.deepEqual(fired, [60]);
+});
+
+test('createNoteConfirmer: sustained note does not re-fire until interrupted', () => {
+  const fired = [];
+  const c = createNoteConfirmer({ onNote: (m) => fired.push(m) });
+  for (let i = 0; i < 10; i++) c.push(60);
+  assert.deepEqual(fired, [60]);
+  c.push(null);
+  for (let i = 0; i < 3; i++) c.push(60);
+  assert.deepEqual(fired, [60, 60]);
+});
+
+test('createNoteConfirmer: different note interrupts and counts toward new note', () => {
+  const fired = [];
+  const c = createNoteConfirmer({ onNote: (m) => fired.push(m) });
+  c.push(60); c.push(60); c.push(60);
+  c.push(64); c.push(64); c.push(64);
+  assert.deepEqual(fired, [60, 64]);
+});
+
+test('createNoteConfirmer: ±1 semitone wobble counts as same note', () => {
+  // Parabolic interpolation occasionally rounds adjacent — should be tolerated.
+  const fired = [];
+  const c = createNoteConfirmer({ onNote: (m) => fired.push(m) });
+  c.push(60); c.push(61); c.push(60);
+  assert.deepEqual(fired, [60]); // first detected pitch is the canonical one
+});
