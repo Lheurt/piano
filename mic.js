@@ -143,6 +143,22 @@
       if (yinLoop) { yinLoop.stop(); yinLoop = null; }
     }
 
+    // Pause the YIN loop while the tab is hidden — browsers throttle audio
+    // in background tabs anyway, but stopping the loop avoids stale state
+    // and saves a little CPU/battery. Resume on visibility if the mic is
+    // still enabled. The mic stream itself stays open across hide/show.
+    if (typeof document !== 'undefined') {
+      let wasRunning = false;
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          wasRunning = !!yinLoop;
+          stopYin();
+        } else if (wasRunning && store.getState().enabled) {
+          startYin();
+        }
+      });
+    }
+
     return { enable, disable, getAnalyser, getSampleRate, startYin, stopYin };
   }
 
