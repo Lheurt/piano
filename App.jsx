@@ -33,9 +33,12 @@ function App() {
             <span className="m-brand-glyph">𝄐</span>
             <span className="m-brand-name">Fermata.</span>
           </div>
-          <div className={'device ' + (midiConnected ? 'connected' : 'disconnected')}>
-            <span className="device-dot" />
-            {midiConnected ? (midiDeviceName || 'MIDI') : 'No MIDI'}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <MicButton />
+            <div className={'device ' + (midiConnected ? 'connected' : 'disconnected')}>
+              <span className="device-dot" />
+              {midiConnected ? (midiDeviceName || 'MIDI') : 'No MIDI'}
+            </div>
           </div>
         </div>
         <div className="m-scroll">{content}</div>

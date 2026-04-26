@@ -933,4 +933,31 @@ kbd {
   background: var(--paper-0);
   box-shadow: inset 0 0 0 2px #c7a14a;
 }
+
+/* ─── Mic button ─────────────────────────────────────────────────────────── */
+.mic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--ink-30, #c8c4ba);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-70, #4a463d);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+}
+.mic-btn:hover { background: var(--paper-1, #f3f0e8); }
+.mic-btn.on    { background: var(--accent, #8a2d2d); color: var(--paper-0, #fbfaf7); border-color: var(--accent, #8a2d2d); }
+.mic-btn.error { color: var(--ink-40, #b3aea2); text-decoration: line-through; }
+.mic-btn-vu {
+  position: absolute;
+  left: 6px; right: 6px; bottom: 2px;
+  height: 1px;
+  background: rgba(255,255,255,0.7);
+  transform-origin: left center;
+}
+.mic-btn-icon { font-family: 'IBM Plex Mono', monospace; }
 .legend-swatch.swatch-missing::after { content: none; }
