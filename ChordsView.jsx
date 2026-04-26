@@ -90,6 +90,14 @@ function ChordsView() {
   const [feedback, setFeedback] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
   const [showTierInfo, setShowTierInfo] = React.useState(false);
+  const [micCheckStatus, setMicCheckStatus] = React.useState(null); // null | 'listening' | 'loading' | 'analyzing' | 'error'
+  const [micEnabled, setMicEnabled] = React.useState(() =>
+    !!(window.micStore && window.micStore.getState().enabled)
+  );
+  React.useEffect(() => {
+    if (!window.micStore) return;
+    return window.micStore.subscribe((s) => setMicEnabled(s.enabled));
+  }, []);
 
   const isDone = playheadIdx >= chords.length;
   const current = chords[playheadIdx];
@@ -146,8 +154,15 @@ function ChordsView() {
     });
   };
 
-  const check = () => {
-    if (isDone || feedback || selected.size === 0) return;
+  const check = async () => {
+    if (isDone || feedback) return;
+
+    if (micEnabled) {
+      await checkViaMic();
+      return;
+    }
+
+    if (selected.size === 0) return;
     const result = window.validateChord(selected, current);
     setFeedback(result);
     setTimeout(() => {
@@ -165,6 +180,68 @@ function ChordsView() {
       setSelected(new Set());
       setFeedback(null);
     }, 1200);
+  };
+
+  const checkViaMic = async () => {
+    if (!window.fermataMic || !window.basicPitchAnalyzeWindow) {
+      setMicCheckStatus('error');
+      setTimeout(() => setMicCheckStatus(null), 1500);
+      return;
+    }
+    setMicCheckStatus('listening');
+    let buf;
+    try {
+      buf = await window.fermataMic.captureWindow(500);
+    } catch (err) {
+      console.error('mic capture failed:', err);
+      setMicCheckStatus('error');
+      setTimeout(() => setMicCheckStatus(null), 1500);
+      return;
+    }
+    setMicCheckStatus('loading');
+    let detectedMidis;
+    try {
+      detectedMidis = await window.basicPitchAnalyzeWindow(
+        buf, window.fermataMic.getSampleRate()
+      );
+    } catch (err) {
+      console.error('basic pitch analyze failed:', err);
+      setMicCheckStatus('error');
+      setTimeout(() => setMicCheckStatus(null), 1500);
+      return;
+    }
+    setMicCheckStatus('analyzing');
+
+    if (!detectedMidis || detectedMidis.size === 0) {
+      // No notes detected → present as a normal failure with empty selection.
+      setSelected(new Set());
+      setFeedback({ ok: false, empty: true });
+      setMicCheckStatus(null);
+      setTimeout(() => {
+        setFeedback(null);
+      }, 1500);
+      return;
+    }
+
+    setSelected(detectedMidis);
+    const result = window.validateChord(detectedMidis, current);
+    setFeedback(result);
+    setMicCheckStatus(null);
+    setTimeout(() => {
+      if (result.ok) {
+        setChords(prev => prev.map((c, i) =>
+          i === playheadIdx ? { ...c, status: 'correct' } : c
+        ));
+        setPlayheadIdx(i => Math.min(i + 1, chords.length));
+        setShowHint(false);
+      } else {
+        setChords(prev => prev.map((c, i) =>
+          i === playheadIdx ? { ...c, status: 'pending' } : c
+        ));
+      }
+      setSelected(new Set());
+      setFeedback(null);
+    }, 1500);
   };
 
   // Build the keyboard `highlighted` map. In the idle state, selected keys get
@@ -268,7 +345,22 @@ function ChordsView() {
         <div className="spacer" />
         <button className="btn btn-secondary btn-sm" onClick={playSelection}  disabled={isDone || !!feedback || selected.size === 0}>▸ Play</button>
         <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone || !!feedback}>Clear</button>
-        <button className="btn btn-primary btn-sm"   onClick={check}          disabled={isDone || !!feedback || selected.size === 0}>Check</button>
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={check}
+          disabled={
+            isDone || !!feedback ||
+            (!micEnabled && selected.size === 0) ||
+            micCheckStatus !== null
+          }
+        >
+          {micCheckStatus === 'listening' ? 'Listening…' :
+           micCheckStatus === 'loading'   ? 'Loading detector…' :
+           micCheckStatus === 'analyzing' ? 'Analyzing…' :
+           micCheckStatus === 'error'     ? 'Error — try again' :
+           micEnabled                      ? 'Check (mic)' :
+                                             'Check'}
+        </button>
         <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>New passage</button>
       </div>
     </div>
