@@ -939,25 +939,33 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid var(--ink-30, #c8c4ba);
-  border-radius: 4px;
+  padding: 5px 10px;
+  border: 1px solid var(--paper-3);
+  border-radius: 2px;
   background: transparent;
-  color: var(--ink-70, #4a463d);
-  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink-2);
+  font-family: var(--font-sans);
   font-size: 12px;
   cursor: pointer;
   position: relative;
 }
-.mic-btn:hover { background: var(--paper-1, #f3f0e8); }
-.mic-btn.on    { background: var(--accent, #8a2d2d); color: var(--paper-0, #fbfaf7); border-color: var(--accent, #8a2d2d); }
-.mic-btn.error { color: var(--ink-40, #b3aea2); text-decoration: line-through; }
+.mic-btn:hover { background: var(--paper-1); }
+.mic-btn.on {
+  background: var(--accent);
+  color: var(--paper-0);
+  border-color: var(--accent);
+}
+.mic-btn.error {
+  color: var(--ink-3);
+  border-color: var(--paper-3);
+  text-decoration: line-through;
+}
 .mic-btn-vu {
   position: absolute;
   left: 6px; right: 6px; bottom: 2px;
   height: 1px;
-  background: rgba(255,255,255,0.7);
+  background: rgba(255, 255, 255, 0.7);
   transform-origin: left center;
 }
-.mic-btn-icon { font-family: 'IBM Plex Mono', monospace; }
+.mic-btn-icon { font-family: var(--font-mono); }
 .legend-swatch.swatch-missing::after { content: none; }
