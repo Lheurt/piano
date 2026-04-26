@@ -158,6 +158,76 @@
     return { push };
   }
 
+  // ─── YIN detector loop ─────────────────────────────────────────────────────
+
+  function createYinLoop({ getAnalyser, getSampleRate, store, confirmer }) {
+    let raf = 0;
+    let running = false;
+    let lastTickMs = 0;
+    const TICK_MS = 33; // ~30 Hz
+    let buf = null;
+
+    function tick(now) {
+      if (!running) return;
+      raf = (globalThis.requestAnimationFrame || setTimeout)(tick);
+      if (now - lastTickMs < TICK_MS) return;
+      lastTickMs = now;
+
+      const analyser = getAnalyser();
+      if (!analyser) return;
+      if (!buf || buf.length !== analyser.fftSize) buf = new Float32Array(analyser.fftSize);
+      analyser.getFloatTimeDomainData(buf);
+
+      // Update VU level (RMS).
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length);
+      // Smooth a bit so the meter doesn't jitter every frame.
+      const prev = store.getState().level;
+      store.setState({ level: prev * 0.7 + rms * 0.3 });
+
+      // Skip pitch detection when audio is essentially silent.
+      if (rms < 0.005) {
+        confirmer.push(null);
+        return;
+      }
+      const detect = (typeof window !== 'undefined' && window.detectPitchMidi)
+        ? window.detectPitchMidi
+        : null;
+      if (!detect) return;
+      const midi = detect(buf, getSampleRate());
+      confirmer.push(midi);
+    }
+
+    return {
+      start() {
+        if (running) return;
+        running = true;
+        raf = (globalThis.requestAnimationFrame || setTimeout)(tick);
+      },
+      stop() {
+        running = false;
+        if (globalThis.cancelAnimationFrame) globalThis.cancelAnimationFrame(raf);
+      },
+    };
+  }
+
+  // ─── Callback registration ────────────────────────────────────────────────
+  // Mirrors registerMidiCallback in audio.js: at most one consumer at a time.
+
+  let _micCallback = null;
+  function registerMicCallback(fn) { _micCallback = fn; }
+  function fireMicNote(midi) {
+    if (_micCallback) {
+      // The midi → pitch-name mapping lives in audio.js; reuse it for parity
+      // with the MIDI callback contract (which delivers pitch names).
+      const name = (typeof window !== 'undefined' && window.midiToName)
+        ? window.midiToName(midi)
+        : null;
+      _micCallback(name, midi);
+    }
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = { createMicStore, createMic, createNoteConfirmer };
   } else {
@@ -165,5 +235,8 @@
     window.createMicStore = createMicStore;
     window.createMic = createMic;
     window.createNoteConfirmer = createNoteConfirmer;
+    window.createYinLoop = createYinLoop;
+    window.registerMicCallback = registerMicCallback;
+    window.fireMicNote = fireMicNote;
   }
 })();
