@@ -221,7 +221,61 @@ function DevicesView({ midiConnected, midiDeviceName }) {
         <li>On Chrome, MIDI is supported on the desktop app only. Mobile Chrome does not expose Web MIDI.</li>
         <li>Bluetooth MIDI requires macOS or Android. On Windows, use a USB connection.</li>
       </ul>
+
+      <hr style={{ margin: '32px 0', border: 0, borderTop: '1px solid var(--paper-3)' }} />
+      <MicSettings />
     </div>
+  );
+}
+
+/* ---------- Mic settings block (used inside DevicesView) ---------- */
+function MicSettings() {
+  const [state, setState] = React.useState(() => window.micStore.getState());
+  React.useEffect(() => window.micStore.subscribe(setState), []);
+
+  const onToggle = () => {
+    if (state.enabled) window.fermataMic.disable();
+    else window.fermataMic.enable();
+  };
+
+  const statusLabel =
+    state.status === 'error'   ? (state.error || 'Microphone error') :
+    state.status === 'loading' ? 'Loading detector…' :
+    state.enabled              ? 'Listening' :
+                                 'Off';
+
+  return (
+    <>
+      <PaneHeader
+        eyebrow="Devices"
+        title="Microphone"
+        sub="Optional. Use any unplugged piano — the app listens via your computer's microphone and matches detected pitches against the on-screen prompt."
+      />
+      <div className="device-card" style={{ marginTop: 12 }}>
+        <div className="device-card-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+          <div>
+            <div className="device-card-title" style={{ fontWeight: 500 }}>
+              {state.enabled ? 'Microphone' : 'Microphone (off)'}
+            </div>
+            <div className="device-card-sub" style={{ fontSize: 12, color: 'var(--ink-2)', marginTop: 2 }}>{statusLabel}</div>
+          </div>
+          <button className={'btn btn-sm ' + (state.enabled ? 'btn-primary' : '')}
+                  onClick={onToggle}>
+            {state.enabled ? 'Turn off' : 'Turn on'}
+          </button>
+        </div>
+      </div>
+      <p className="perm-note" style={{ marginTop: 8 }}>
+        Audio stays on your device — Fermata does not record or upload anything.
+        The browser will ask for permission the first time you turn the mic on.
+      </p>
+      <ul className="caveats" style={{ marginTop: 12 }}>
+        <li>Requires HTTPS (or <code>localhost</code>) — modern browsers block <code>getUserMedia</code> over plain HTTP.</li>
+        <li>Single-note matching uses on-device pitch detection (YIN) and runs continuously while the mic is on.</li>
+        <li>Chord validation downloads a small machine-learning model the first time you use it in the Chords view.</li>
+        <li>If permission is denied, click the lock icon in your address bar → Permissions → Microphone → Allow, then reload.</li>
+      </ul>
+    </>
   );
 }
 
