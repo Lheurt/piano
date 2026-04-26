@@ -201,7 +201,7 @@ function ChordsView() {
     setMicCheckStatus('listening');
     let buf;
     try {
-      buf = await window.fermataMic.captureWindow(1500);
+      buf = await window.fermataMic.captureWindow(1000);
     } catch (err) {
       console.error('mic capture failed:', err);
       setMicCheckStatus('error');
@@ -231,8 +231,21 @@ function ChordsView() {
       return;
     }
 
-    setSelected(detectedMidis);
-    const result = window.validateChord(detectedMidis, current);
+    // Collapse octave duplicates: keep only the lowest MIDI per pitch class.
+    // The model often reports the same note in multiple octaves due to
+    // harmonics; validateChord treats them as a single PC anyway, but the
+    // keyboard would otherwise light up phantom voices. Lowest is preserved
+    // so the bass-note inversion check still sees the right pitch.
+    const dedupedByPc = new Map();
+    detectedMidis.forEach((m) => {
+      const pc = ((m % 12) + 12) % 12;
+      const existing = dedupedByPc.get(pc);
+      if (existing == null || m < existing) dedupedByPc.set(pc, m);
+    });
+    const deduped = new Set(dedupedByPc.values());
+
+    setSelected(deduped);
+    const result = window.validateChord(deduped, current);
     setFeedback(result);
     setMicCheckStatus(null);
     setTimeout(() => {
