@@ -236,3 +236,18 @@ test('createNoteConfirmer: ±1 semitone wobble counts as same note', () => {
   c.push(60); c.push(61); c.push(60);
   assert.deepEqual(fired, [60]); // first detected pitch is the canonical one
 });
+
+test('createMic: enable → disable → enable → disable cycle is idempotent', async () => {
+  // In Node, startYin returns early (no `window`), so this test is just
+  // asserting the lifecycle doesn't throw across enable → disable → enable.
+  const env = withMockedBrowser((stream) => () => Promise.resolve(stream));
+  try {
+    const store = createMicStore();
+    const mic = createMic(store);
+    await mic.enable();
+    mic.disable();
+    await mic.enable();
+    mic.disable();
+    assert.equal(store.getState().enabled, false);
+  } finally { env.restore(); }
+});

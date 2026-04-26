@@ -94,9 +94,11 @@
         status: 'listening',
         error: null,
       });
+      startYin();
     }
 
     function disable() {
+      stopYin();
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
@@ -114,7 +116,28 @@
     function getAnalyser() { return analyser; }
     function getSampleRate() { return ctx ? ctx.sampleRate : 44100; }
 
-    return { enable, disable, getAnalyser, getSampleRate };
+    // Detector loop bootstrapping (browser only — Node tests don't have an
+    // AnalyserNode to read from, so startYin returns early).
+    let yinLoop = null;
+    function startYin() {
+      if (typeof window === 'undefined') return;
+      if (yinLoop) return;
+      const confirmer = createNoteConfirmer({
+        onNote: (midi) => { fireMicNote(midi); },
+      });
+      yinLoop = createYinLoop({
+        getAnalyser,
+        getSampleRate,
+        store,
+        confirmer,
+      });
+      yinLoop.start();
+    }
+    function stopYin() {
+      if (yinLoop) { yinLoop.stop(); yinLoop = null; }
+    }
+
+    return { enable, disable, getAnalyser, getSampleRate, startYin, stopYin };
   }
 
   // ─── Note confirmer ────────────────────────────────────────────────────────
