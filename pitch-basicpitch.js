@@ -19,8 +19,18 @@
   let _modulePromise = null;
   let _instancePromise = null;
 
+  function log(...args) {
+    if (typeof console !== 'undefined') console.log('[basic-pitch]', ...args);
+  }
+
   async function loadModule() {
-    if (!_modulePromise) _modulePromise = import(PKG_URL);
+    if (!_modulePromise) {
+      log('importing package from', PKG_URL);
+      _modulePromise = import(PKG_URL).then((m) => {
+        log('package loaded; exports:', Object.keys(m).join(', '));
+        return m;
+      });
+    }
     return _modulePromise;
   }
 
@@ -39,9 +49,22 @@
           Object.keys(mod).join(', ')
         );
       }
-      // The constructor accepts either a TF GraphModel or a URL string.
-      // It does NOT accept zero arguments.
-      return new Cls(MODEL_URL);
+      log('instantiating BasicPitch with model URL', MODEL_URL);
+      const inst = new Cls(MODEL_URL);
+      // The constructor stores a Promise<GraphModel> on inst.model. Await it
+      // here so the first analyzeWindow() call doesn't pay the model-download
+      // cost; pre-loading via loadModel() actually pre-loads, not just imports.
+      if (inst.model && typeof inst.model.then === 'function') {
+        log('awaiting graph model download...');
+        try {
+          inst.model = await inst.model;
+          log('graph model ready');
+        } catch (err) {
+          log('graph model failed to load:', err && err.message);
+          throw err;
+        }
+      }
+      return inst;
     })();
     return _instancePromise;
   }
@@ -82,16 +105,14 @@
       );
     }
 
-    // Resample to the package's required 22050 Hz mono.
+    log('resampling', float32Buffer.length, 'samples from', sampleRate, 'to', TARGET_SAMPLE_RATE, 'Hz');
     const audio22k = resample(float32Buffer, sampleRate, TARGET_SAMPLE_RATE);
 
-    // evaluateModel streams results: it calls the frame callback per chunk
-    // with (frames, onsets, contours), and the progress callback with 0..1.
-    // It does NOT return anything useful.
     const frameChunks   = [];
     const onsetChunks   = [];
     const contourChunks = [];
 
+    log('running evaluateModel on', audio22k.length, 'samples');
     await inst.evaluateModel(
       audio22k,
       (frames, onsets, contours) => {
@@ -101,6 +122,7 @@
       },
       () => { /* progress — no-op */ }
     );
+    log('evaluateModel done; chunks:', frameChunks.length);
 
     const frames   = concat2D(frameChunks);
     const onsets   = concat2D(onsetChunks);
@@ -115,10 +137,8 @@
       );
     }
 
-    // Signature: outputToNotesPoly(frames, onsets, contours,
-    //   onsetThresh=0.5, frameThresh=0.3, minNoteLen=5, inferOnsets=true,
-    //   maxFreq=null, minFreq=null, melodiaTrick=true, energyTol=11)
     const events = toEvents(frames, onsets, contours, 0.5, 0.3);
+    log('outputToNotesPoly produced', events ? events.length : 0, 'note events');
 
     const set = new Set();
     if (events) {
@@ -126,6 +146,7 @@
         if (ev && ev.pitchMidi != null) set.add(ev.pitchMidi | 0);
       }
     }
+    log('returning detected MIDI set:', Array.from(set).sort((a, b) => a - b).join(','));
     return set;
   }
 

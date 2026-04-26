@@ -99,6 +99,16 @@ function ChordsView() {
     return window.micStore.subscribe((s) => setMicEnabled(s.enabled));
   }, []);
 
+  // Pre-load Basic Pitch the moment the user enters chord view with mic on.
+  // The model is several MB; loading it eagerly removes the per-chord wait.
+  React.useEffect(() => {
+    if (!micEnabled) return;
+    if (!window.basicPitchLoadModel) return;
+    window.basicPitchLoadModel().catch(err => {
+      console.error('basic-pitch preload failed:', err);
+    });
+  }, [micEnabled]);
+
   const isDone = playheadIdx >= chords.length;
   const current = chords[playheadIdx];
   const correct = chords.filter(c => c.status === 'correct').length;
@@ -244,6 +254,66 @@ function ChordsView() {
     }, 1500);
   };
 
+  // Automatic onset-triggered chord detection when mic is on.
+  // Watches the YIN loop's smoothed RMS level; on a silence→loud transition,
+  // waits for the chord to settle, then auto-runs checkViaMic.
+  const checkViaMicRef = React.useRef(null);
+  checkViaMicRef.current = checkViaMic;
+  const guardRef = React.useRef({ feedback, micCheckStatus, isDone });
+  guardRef.current = { feedback, micCheckStatus, isDone };
+
+  React.useEffect(() => {
+    if (!micEnabled) return;
+    if (!window.micStore) return;
+
+    const SILENCE_THRESHOLD = 0.012;
+    const SETTLE_MS = 450;
+
+    let phase = 'silent'; // 'silent' | 'rising' | 'analyzing'
+    let timer = null;
+
+    const unsub = window.micStore.subscribe((s) => {
+      if (s.level < SILENCE_THRESHOLD) {
+        if (phase === 'rising' && timer) {
+          clearTimeout(timer);
+          timer = null;
+          phase = 'silent';
+        }
+        // 'analyzing' state stays put — it'll reset itself when the analyze
+        // pipeline finishes (see the .finally below).
+        return;
+      }
+      // audio is loud
+      if (phase !== 'silent') return;
+
+      // Bail if a check is already running or feedback is still on screen.
+      const g = guardRef.current;
+      if (g.feedback || g.micCheckStatus !== null || g.isDone) return;
+
+      phase = 'rising';
+      timer = setTimeout(() => {
+        timer = null;
+        const stillBlocked = guardRef.current.feedback ||
+                             guardRef.current.micCheckStatus !== null ||
+                             guardRef.current.isDone;
+        if (stillBlocked) { phase = 'silent'; return; }
+        phase = 'analyzing';
+        const fn = checkViaMicRef.current;
+        Promise.resolve(fn ? fn() : null).finally(() => {
+          // Wait for feedback display to clear (1500 ms after analyze) before
+          // re-arming. The setTimeout in checkViaMic handles the clear; we
+          // just back off long enough to avoid retriggering on the tail.
+          setTimeout(() => { phase = 'silent'; }, 2000);
+        });
+      }, SETTLE_MS);
+    });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      unsub();
+    };
+  }, [micEnabled]);
+
   // Build the keyboard `highlighted` map. In the idle state, selected keys get
   // the `selected` style. During feedback, we replace it with correct/incorrect/
   // missing states. Missing tones are rendered on the canonical middle-C voicing.
@@ -358,7 +428,7 @@ function ChordsView() {
            micCheckStatus === 'loading'   ? 'Loading detector…' :
            micCheckStatus === 'analyzing' ? 'Analyzing…' :
            micCheckStatus === 'error'     ? 'Error — try again' :
-           micEnabled                      ? 'Check (mic)' :
+           micEnabled                      ? 'Play chord' :
                                              'Check'}
         </button>
         <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>New passage</button>
