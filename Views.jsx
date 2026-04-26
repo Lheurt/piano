@@ -260,13 +260,14 @@ function MicSettings() {
         title="Microphone"
         sub="Optional. Use any unplugged piano — the app listens via your computer's microphone and matches detected pitches against the on-screen prompt."
       />
-      <div className="device-card" style={{ marginTop: 12 }}>
-        <div className="device-card-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-          <div>
-            <div className="device-card-title" style={{ fontWeight: 500 }}>
-              {state.enabled ? 'Microphone' : 'Microphone (off)'}
+      <div className="device-panel">
+        <div className="device-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+          <div className="device-info">
+            <div className={'device-name ' + (state.enabled ? 'connected' : 'disconnected')}>
+              <span className="device-dot" />
+              {state.enabled ? 'Microphone listening' : 'Microphone off'}
             </div>
-            <div className="device-card-sub" style={{ fontSize: 12, color: 'var(--ink-2)', marginTop: 2 }}>{statusLabel}</div>
+            <div className="device-sub mono">{statusLabel}</div>
           </div>
           <button className={'btn btn-sm ' + (state.enabled ? 'btn-primary' : '')}
                   onClick={onToggle}>
@@ -274,11 +275,15 @@ function MicSettings() {
           </button>
         </div>
       </div>
-      <p className="perm-note" style={{ marginTop: 8 }}>
-        Audio stays on your device — Fermata does not record or upload anything.
-        The browser will ask for permission the first time you turn the mic on.
+
+      <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--fg-muted)', margin: '16px 0 0', fontSize: 14 }}>
+        Audio stays on your device — Fermata does not record or upload anything. The browser will ask for permission the first time you turn the mic on.
       </p>
-      <ul className="caveats" style={{ marginTop: 12 }}>
+
+      <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 500, marginTop: 36, marginBottom: 8 }}>
+        Notes
+      </h3>
+      <ul className="tshoot">
         <li>Requires HTTPS (or <code>localhost</code>) — modern browsers block <code>getUserMedia</code> over plain HTTP.</li>
         <li>Single-note matching uses on-device pitch detection (YIN) and runs continuously while the mic is on.</li>
         <li>Chord validation downloads a small machine-learning model the first time you use it in the Chords view.</li>
