@@ -55,8 +55,9 @@ function PracticeView() {
 
   const onKeyRef = React.useRef(null);
 
-  const onKey = (pitch) => {
-    window.playNote(pitch);
+  const onKey = (pitch, opts) => {
+    const fromMic = opts && opts.fromMic;
+    if (!fromMic) window.playNote(pitch);
     if (isDone || !current || current.status !== 'pending') return;
     setPlayed(pitch);
     const isCorrect = window.pitchToMidi(pitch) === window.pitchToMidi(current.pitch);
@@ -98,6 +99,14 @@ function PracticeView() {
   React.useEffect(() => {
     window.registerMidiCallback((pitch) => onKeyRef.current(pitch));
     return () => window.registerMidiCallback(null);
+  }, []);
+  React.useEffect(() => {
+    if (!window.registerMicCallback) return;
+    window.registerMicCallback((pitch /*, midi */) => {
+      if (!pitch) return;
+      onKeyRef.current(pitch, { fromMic: true });
+    });
+    return () => window.registerMicCallback(null);
   }, []);
 
   const highlighted = {};
