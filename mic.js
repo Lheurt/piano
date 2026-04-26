@@ -143,31 +143,7 @@
       if (yinLoop) { yinLoop.stop(); yinLoop = null; }
     }
 
-    function captureWindow(ms) {
-      return new Promise((resolve, reject) => {
-        if (!analyser || !ctx) {
-          reject(new Error('Mic not running'));
-          return;
-        }
-        const targetLen = Math.floor(ctx.sampleRate * ms / 1000);
-        const out = new Float32Array(targetLen);
-        let written = 0;
-        const tmp = new Float32Array(analyser.fftSize);
-        const tickFn = () => {
-          if (!analyser) { reject(new Error('Mic stopped mid-capture')); return; }
-          analyser.getFloatTimeDomainData(tmp);
-          const remaining = targetLen - written;
-          const copyLen = Math.min(remaining, tmp.length);
-          out.set(tmp.subarray(0, copyLen), written);
-          written += copyLen;
-          if (written >= targetLen) resolve(out);
-          else requestAnimationFrame(tickFn);
-        };
-        tickFn();
-      });
-    }
-
-    return { enable, disable, getAnalyser, getSampleRate, startYin, stopYin, captureWindow };
+    return { enable, disable, getAnalyser, getSampleRate, startYin, stopYin };
   }
 
   // ─── Note confirmer ────────────────────────────────────────────────────────
