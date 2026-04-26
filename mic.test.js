@@ -4,6 +4,21 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createMicStore } = require('./mic.js');
 
+// Node 21+ defines globalThis.navigator as a getter-only property, which
+// breaks the simple `globalThis.navigator = mockObj` pattern these tests
+// rely on. Convert it to a writable value property once.
+{
+  const desc = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  if (desc && typeof desc.get === 'function' && desc.configurable) {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: globalThis.navigator,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  }
+}
+
 test('createMicStore initial state', () => {
   const s = createMicStore();
   assert.deepEqual(s.getState(), {

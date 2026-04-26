@@ -5,22 +5,6 @@
 (function () {
   'use strict';
 
-  // In Node 21+ `navigator` is a getter-only property on globalThis, which
-  // makes test-time mocking via simple assignment silently fail (or throw in
-  // strict mode). Redefine it as a plain writable value once so that tests
-  // can do `globalThis.navigator = mockObj` and the change sticks.
-  if (typeof module !== 'undefined') {
-    var _navDesc = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
-    if (_navDesc && typeof _navDesc.get === 'function' && _navDesc.configurable) {
-      Object.defineProperty(globalThis, 'navigator', {
-        value: globalThis.navigator,
-        writable: true,
-        configurable: true,
-        enumerable: true,
-      });
-    }
-  }
-
   // ─── Store ─────────────────────────────────────────────────────────────────
 
   function createMicStore() {
