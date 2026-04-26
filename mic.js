@@ -117,11 +117,53 @@
     return { enable, disable, getAnalyser, getSampleRate };
   }
 
+  // ─── Note confirmer ────────────────────────────────────────────────────────
+  // A pitch must appear in 3 consecutive frames (±1 semitone wobble OK) before
+  // firing. Re-trigger requires a null frame or a different note in between.
+
+  const CONFIRM_FRAMES = 3;
+  const WOBBLE_SEMITONES = 1;
+
+  function createNoteConfirmer({ onNote }) {
+    let canonical = null;   // the pitch we're trying to confirm
+    let count = 0;
+    let lastFired = null;   // the most recently fired note, or null after reset
+
+    function push(midi) {
+      if (midi === null) {
+        canonical = null;
+        count = 0;
+        lastFired = null; // null frame = release; next note can fire
+        return;
+      }
+      if (canonical === null) {
+        canonical = midi;
+        count = 1;
+        return;
+      }
+      if (Math.abs(midi - canonical) <= WOBBLE_SEMITONES) {
+        count++;
+        if (count === CONFIRM_FRAMES && canonical !== lastFired) {
+          lastFired = canonical;
+          onNote(canonical);
+        }
+      } else {
+        // different note — start counting it
+        canonical = midi;
+        count = 1;
+        lastFired = null;
+      }
+    }
+
+    return { push };
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { createMicStore, createMic };
+    module.exports = { createMicStore, createMic, createNoteConfirmer };
   } else {
     window.micStore = createMicStore();
     window.createMicStore = createMicStore;
     window.createMic = createMic;
+    window.createNoteConfirmer = createNoteConfirmer;
   }
 })();
