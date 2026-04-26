@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "node --test chords.test.js"
+    "test": "node --test *.test.js"
   },
   "devDependencies": {
     "http-server": "^14.1.1"

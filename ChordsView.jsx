@@ -90,6 +90,16 @@ function ChordsView() {
   const [feedback, setFeedback] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
   const [showTierInfo, setShowTierInfo] = React.useState(false);
+  // Transient MIDI for the most recent rejected (wrong-PC) note: lights red
+  // briefly then clears. Only used in mic/MIDI sequential mode.
+  const [rejected, setRejected] = React.useState(null);
+  const [micEnabled, setMicEnabled] = React.useState(() =>
+    !!(window.micStore && window.micStore.getState().enabled)
+  );
+  React.useEffect(() => {
+    if (!window.micStore) return;
+    return window.micStore.subscribe((s) => setMicEnabled(s.enabled));
+  }, []);
 
   const isDone = playheadIdx >= chords.length;
   const current = chords[playheadIdx];
@@ -113,10 +123,72 @@ function ChordsView() {
     setShowHint(false);
   };
 
+  // Sequential single-note validation, used when mic (or MIDI) drives input.
+  // Each note is validated against the current chord on arrival:
+  //   - PC in chord and not already played → add to selected (lights green)
+  //   - PC in chord but already played → no-op (octave duplicate)
+  //   - PC not in chord → flash red briefly, do NOT add
+  // When all required PCs are present, validate the whole chord and advance.
+  const sequentialNote = (midi) => {
+    if (isDone || feedback) return;
+    if (!current) return;
+
+    const pc = ((midi % 12) + 12) % 12;
+    const required = current.pitchClasses;
+
+    if (required.indexOf(pc) === -1) {
+      setRejected(midi);
+      setTimeout(() => setRejected((r) => (r === midi ? null : r)), 350);
+      return;
+    }
+
+    let pcAlreadyPlayed = false;
+    selected.forEach((m) => {
+      if (((m % 12) + 12) % 12 === pc) pcAlreadyPlayed = true;
+    });
+    if (pcAlreadyPlayed) return;
+
+    const next = new Set(selected);
+    next.add(midi);
+    setSelected(next);
+
+    const playedPcs = new Set();
+    next.forEach((m) => playedPcs.add(((m % 12) + 12) % 12));
+    const allCovered = required.every((p) => playedPcs.has(p));
+    if (!allCovered) return;
+
+    // All required pitch classes are present — run the full validator (which
+    // also checks bass-note correctness for inversions) and advance.
+    const result = window.validateChord(next, current);
+    setFeedback(result);
+    setTimeout(() => {
+      if (result.ok) {
+        setChords(prev => prev.map((c, i) =>
+          i === playheadIdx ? { ...c, status: 'correct' } : c
+        ));
+        setPlayheadIdx(i => Math.min(i + 1, chords.length));
+        setShowHint(false);
+      } else {
+        setChords(prev => prev.map((c, i) =>
+          i === playheadIdx ? { ...c, status: 'pending' } : c
+        ));
+      }
+      setSelected(new Set());
+      setFeedback(null);
+    }, 1200);
+  };
+
+  // Manual click flow (mic off): toggle selection; user hits Check.
+  // Sequential flow (mic on): every input — click, MIDI, mic — runs through
+  // sequentialNote so the experience is consistent across input sources.
   const onKey = (pitch) => {
     window.playNote(pitch);
-    if (isDone || feedback) return; // Block input while feedback is showing.
+    if (isDone || feedback) return;
     const midi = window.pitchToMidi(pitch);
+    if (micEnabled) {
+      sequentialNote(midi);
+      return;
+    }
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(midi)) next.delete(midi);
@@ -130,6 +202,20 @@ function ChordsView() {
   React.useEffect(() => {
     window.registerMidiCallback((pitch) => onKeyRef.current(pitch));
     return () => window.registerMidiCallback(null);
+  }, []);
+
+  // Mic input is sequential by definition — bypass the click toggle so a
+  // mic-detected note is always validated against the current chord (no
+  // synth playback either; the acoustic instrument provides its own).
+  const sequentialNoteRef = React.useRef(null);
+  sequentialNoteRef.current = sequentialNote;
+  React.useEffect(() => {
+    if (!window.registerMicCallback) return;
+    window.registerMicCallback((_pitch, midi) => {
+      if (midi == null) return;
+      sequentialNoteRef.current(midi);
+    });
+    return () => window.registerMicCallback(null);
   }, []);
 
   const clearSelection = () => {
@@ -147,7 +233,8 @@ function ChordsView() {
   };
 
   const check = () => {
-    if (isDone || feedback || selected.size === 0) return;
+    if (isDone || feedback) return;
+    if (selected.size === 0) return;
     const result = window.validateChord(selected, current);
     setFeedback(result);
     setTimeout(() => {
@@ -167,14 +254,22 @@ function ChordsView() {
     }, 1200);
   };
 
-  // Build the keyboard `highlighted` map. In the idle state, selected keys get
-  // the `selected` style. During feedback, we replace it with correct/incorrect/
-  // missing states. Missing tones are rendered on the canonical middle-C voicing.
+  // Build the keyboard `highlighted` map.
+  //   Mic off, no feedback: selected keys are `selected` (gray) — manual mode.
+  //   Mic on, no feedback:  selected keys are `correct` (green) since each
+  //                          one was already validated as it came in. The
+  //                          most recently rejected note (if any) shows
+  //                          `incorrect` (red) for ~350 ms.
+  //   During feedback (chord-complete): correct/incorrect/missing as before.
   const highlighted = {};
   if (!feedback) {
+    const idleStyle = micEnabled ? 'correct' : 'selected';
     selected.forEach(midi => {
-      highlighted[window.midiToName(midi)] = 'selected';
+      highlighted[window.midiToName(midi)] = idleStyle;
     });
+    if (rejected != null) {
+      highlighted[window.midiToName(rejected)] = 'incorrect';
+    }
     if (showHint && !isDone && current) {
       current.pitchClasses.forEach(pc => {
         const midi = 60 + pc;
@@ -268,7 +363,15 @@ function ChordsView() {
         <div className="spacer" />
         <button className="btn btn-secondary btn-sm" onClick={playSelection}  disabled={isDone || !!feedback || selected.size === 0}>▸ Play</button>
         <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone || !!feedback}>Clear</button>
-        <button className="btn btn-primary btn-sm"   onClick={check}          disabled={isDone || !!feedback || selected.size === 0}>Check</button>
+        {!micEnabled && (
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={check}
+            disabled={isDone || !!feedback || selected.size === 0}
+          >
+            Check
+          </button>
+        )}
         <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>New passage</button>
       </div>
     </div>

@@ -10,6 +10,8 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
   <script src="audio.js"></script>
+  <script src="pitch-yin.js"></script>
+  <script src="mic.js"></script>
   <script src="notes.js"></script>
   <script src="chords.js"></script>
 </head>
@@ -22,5 +24,8 @@
   <script type="text/babel" src="Views.jsx"></script>
   <script type="text/babel" src="ChordsView.jsx"></script>
   <script type="text/babel" src="App.jsx"></script>
+  <script>
+    window.fermataMic = window.createMic(window.micStore);
+  </script>
 </body>
 </html>
