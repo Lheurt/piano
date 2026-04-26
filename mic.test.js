@@ -251,3 +251,27 @@ test('createMic: enable → disable → enable → disable cycle is idempotent',
     assert.equal(store.getState().enabled, false);
   } finally { env.restore(); }
 });
+
+test('createMic: concurrent enable() calls do not leak a stream', async () => {
+  // Track every stream the mock factory hands out, so we can assert no orphans.
+  const allStreams = [];
+  const env = withMockedBrowser((stream) => async () => {
+    // Hand out a fresh mock stream per call so we can detect doubling-up.
+    const fresh = makeMockStream();
+    allStreams.push(fresh);
+    return fresh;
+  });
+  try {
+    const store = createMicStore();
+    const mic = createMic(store);
+    // Fire two enables back-to-back without awaiting the first.
+    const p1 = mic.enable();
+    const p2 = mic.enable();
+    await Promise.all([p1, p2]);
+    // Exactly one stream should have been acquired.
+    assert.equal(allStreams.length, 1, `expected 1 stream, got ${allStreams.length}`);
+    // And the disable path should still cleanly stop it.
+    mic.disable();
+    assert.equal(allStreams[0].getAudioTracks()[0].stopped, true);
+  } finally { env.restore(); }
+});

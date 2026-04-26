@@ -36,65 +36,71 @@
     let stream = null;
     let ctx = null;
     let analyser = null;
+    let _enabling = false;
 
     async function enable() {
-      if (store.getState().enabled) return;
-      if (!globalThis.navigator || !globalThis.navigator.mediaDevices ||
-          !globalThis.navigator.mediaDevices.getUserMedia) {
-        store.setState({
-          enabled: false,
-          status: 'error',
-          error: 'Microphone API not supported in this browser.',
-        });
-        return;
-      }
+      if (store.getState().enabled || _enabling) return;
+      _enabling = true;
       try {
-        stream = await globalThis.navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false,
-          },
+        if (!globalThis.navigator || !globalThis.navigator.mediaDevices ||
+            !globalThis.navigator.mediaDevices.getUserMedia) {
+          store.setState({
+            enabled: false,
+            status: 'error',
+            error: 'Microphone API not supported in this browser.',
+          });
+          return;
+        }
+        try {
+          stream = await globalThis.navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false,
+            },
+          });
+        } catch (err) {
+          const denied = err && (err.name === 'NotAllowedError' ||
+                                  err.name === 'SecurityError');
+          store.setState({
+            enabled: false,
+            permission: denied ? 'denied' : store.getState().permission,
+            status: 'error',
+            error: err && err.message || String(err),
+          });
+          return;
+        }
+
+        ctx = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
+        if (ctx.state === 'suspended') await ctx.resume();
+        const source = ctx.createMediaStreamSource(stream);
+        const highpass = ctx.createBiquadFilter();
+        highpass.type = 'highpass';
+        highpass.frequency.value = 80;
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 2048;
+        source.connect(highpass);
+        highpass.connect(analyser);
+
+        const tracks = stream.getAudioTracks();
+        tracks.forEach((t) => {
+          t.onended = () => {
+            // OS revoke or unplug
+            disable();
+            store.setState({ status: 'error', error: 'Microphone disconnected.' });
+          };
         });
-      } catch (err) {
-        const denied = err && (err.name === 'NotAllowedError' ||
-                                err.name === 'SecurityError');
+
         store.setState({
-          enabled: false,
-          permission: denied ? 'denied' : store.getState().permission,
-          status: 'error',
-          error: err && err.message || String(err),
+          enabled: true,
+          permission: 'granted',
+          status: 'listening',
+          error: null,
         });
-        return;
+        startYin();
+      } finally {
+        _enabling = false;
       }
-
-      ctx = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
-      if (ctx.state === 'suspended') await ctx.resume();
-      const source = ctx.createMediaStreamSource(stream);
-      const highpass = ctx.createBiquadFilter();
-      highpass.type = 'highpass';
-      highpass.frequency.value = 80;
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 2048;
-      source.connect(highpass);
-      highpass.connect(analyser);
-
-      const tracks = stream.getAudioTracks();
-      tracks.forEach((t) => {
-        t.onended = () => {
-          // OS revoke or unplug
-          disable();
-          store.setState({ status: 'error', error: 'Microphone disconnected.' });
-        };
-      });
-
-      store.setState({
-        enabled: true,
-        permission: 'granted',
-        status: 'listening',
-        error: null,
-      });
-      startYin();
     }
 
     function disable() {
@@ -190,9 +196,10 @@
     const TICK_MS = 33; // ~30 Hz
     let buf = null;
 
-    function tick(now) {
+    function tick() {
       if (!running) return;
-      raf = (globalThis.requestAnimationFrame || setTimeout)(tick);
+      raf = requestAnimationFrame(tick);
+      const now = performance.now();
       if (now - lastTickMs < TICK_MS) return;
       lastTickMs = now;
 
@@ -226,11 +233,11 @@
       start() {
         if (running) return;
         running = true;
-        raf = (globalThis.requestAnimationFrame || setTimeout)(tick);
+        raf = requestAnimationFrame(tick);
       },
       stop() {
         running = false;
-        if (globalThis.cancelAnimationFrame) globalThis.cancelAnimationFrame(raf);
+        cancelAnimationFrame(raf);
       },
     };
   }
