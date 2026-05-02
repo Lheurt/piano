@@ -7,7 +7,7 @@
 //
 // Tier ranges are inclusive C-to-C MIDI numbers (so "1 octave" includes both
 // Cs as anchors). Tier >= 2 includes both enharmonic spellings of every black
-// key in range. Tier 4 is added in a later task.
+// key in range.
 
 (function () {
   // [loMidi, hiMidi] inclusive. C2=36, C3=48, C4=60, C5=72, C6=84.
