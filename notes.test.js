@@ -97,3 +97,30 @@ test('makePassage produces no immediate MIDI repeats', () => {
     }
   }
 });
+
+test('tier 4 treble = C3–C6 with accidentals', () => {
+  const pool = N.tierPool('treble', 4);
+  // C3..C6 = 37 MIDI; 22 naturals + 15 black keys * 2 spellings = 52 names.
+  assert.equal(pool.length, 52);
+  assert.ok(pool.includes('C3'));   // crawled-down anchor
+  assert.ok(pool.includes('B3'));
+  assert.ok(pool.includes('C6'));
+  assert.ok(pool.includes('F#3'));  // accidentals in the crawled octave
+  assert.ok(pool.includes('Gb3'));
+});
+
+test('tier 4 bass = C2–C5 with accidentals', () => {
+  const pool = N.tierPool('bass', 4);
+  // C2..C5 = 37 MIDI; same shape as tier 4 treble.
+  assert.equal(pool.length, 52);
+  assert.ok(pool.includes('C2'));
+  assert.ok(pool.includes('C5'));   // crawled-up anchor
+  assert.ok(pool.includes('B4'));
+  assert.ok(pool.includes('F#4'));
+});
+
+test('tier 4 grand = C2–C6 (same range as tier 3)', () => {
+  const pool = N.tierPool('grand', 4);
+  // Same shape as tier 3 grand.
+  assert.equal(pool.length, 69);
+});
