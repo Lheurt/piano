@@ -38,8 +38,8 @@ function ledgersForY(y) {
 
 function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead }) {
   const lines = [20, 32, 44, 56, 68];
-  const viewTop = -16;            // headroom for ledgers above the staff (C6 region)
-  const viewBottom = 112;          // room for ledgers below (C2 region)
+  const viewTop = -40;             // headroom for ledgers above (tier-4 bass C5 region)
+  const viewBottom = 128;          // room for ledgers below (tier-4 treble C3 region)
   const localHeight = viewBottom - viewTop;
   const startX = narrow ? 50 : 78;
   const endX = width - 14;
@@ -116,8 +116,9 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
 }
 
 function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760, narrow = false, showPlayhead = true }) {
-  const trebleSlots = notes.map((n, i) => clefForPitch(n.pitch) === 'treble' ? { n, globalIdx: i } : null);
-  const bassSlots   = notes.map((n, i) => clefForPitch(n.pitch) === 'bass'   ? { n, globalIdx: i } : null);
+  const slotClef = (n) => n.assignedClef || clefForPitch(n.pitch);
+  const trebleSlots = notes.map((n, i) => slotClef(n) === 'treble' ? { n, globalIdx: i } : null);
+  const bassSlots   = notes.map((n, i) => slotClef(n) === 'bass'   ? { n, globalIdx: i } : null);
 
   const showTreble = clef === 'grand' || clef === 'treble';
   const showBass   = clef === 'grand' || clef === 'bass';
