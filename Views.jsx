@@ -224,26 +224,28 @@ function PracticeView() {
       </div>
 
       {(() => {
-        // Underlying range matches the clef's full 2-octave staff range so all
-        // prompts are reachable. On mobile the visible window stays at 1 octave
-        // (pan to scroll); on desktop the full 2 octaves fit at once.
+        // Tier-4 single-clef extends the kb range by one octave so every
+        // prompt in the crawled octave is clickable: treble down to C3,
+        // bass up to C5. Grand mode already covers C2–C6 across both clefs.
+        const tier4Single = tier === 4 && clef !== 'grand';
         const kb =
-          clef === 'treble' ? { lo: 60, hi: 84,
-                                visibleSemi: narrow ? 12 : 24,
+          clef === 'treble' ? { lo: tier4Single ? 48 : 60, hi: 84,
+                                visibleSemi: narrow ? 12 : (tier4Single ? 36 : 24),
                                 defaultLeftC: 60 } :
-          clef === 'bass'   ? { lo: 36, hi: 60,
-                                visibleSemi: narrow ? 12 : 24,
+          clef === 'bass'   ? { lo: 36, hi: tier4Single ? 72 : 60,
+                                visibleSemi: narrow ? 12 : (tier4Single ? 36 : 24),
                                 defaultLeftC: narrow ? 48 : 36 } :
                               { lo: 36, hi: 84,
                                 visibleSemi: narrow ? 12 : 48,
                                 defaultLeftC: narrow ? 60 : 36 };
         // On desktop, keep per-key width constant across clefs: grand shows 29
-        // whites across the full pane; single-clef shows 15. Constrain the
-        // single-clef keyboard to 15/29 of the pane and center it so its keys
-        // match grand-mode width instead of stretching.
+        // whites across the full pane; single-clef tiers 1–3 show 15, tier 4
+        // shows 22. Constrain single-clef to its own white-key share of the
+        // pane and center it so keys match grand-mode width instead of stretching.
+        const singleWhites = tier4Single ? 22 : 15;
         const constrain = !narrow && clef !== 'grand';
         const wrapStyle = constrain
-          ? { maxWidth: 'calc(100% * 15 / 29)', margin: '0 auto' }
+          ? { maxWidth: `calc(100% * ${singleWhites} / 29)`, margin: '0 auto' }
           : undefined;
         return (
           <div style={wrapStyle}>

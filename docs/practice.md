@@ -40,7 +40,7 @@ The progression deliberately scales two axes: **range** (how far above and below
 - **Tier 1** — the staff body, plain. One octave centered on middle C, naturals only. The fastest way to drill the lines and spaces of the active clef without distractions.
 - **Tier 2** — adds sharps and flats to the same one-octave window. Both enharmonic spellings appear (`C#4` and `Db4` are both possible prompts).
 - **Tier 3** — expands to two octaves per clef (the conventional sight-reading range), accidentals on. This is the default and matches the historical behavior of the app.
-- **Tier 4** — adds **ledger-line crawl**. In single-clef mode, the staff extends one octave into the other clef's territory: the treble staff renders down to C3 with stacked ledger lines below; the bass staff renders up to C5 with stacked ledger lines above. Total range stays bounded — past one octave, real piano notation typically uses `8va`/`8vb` brackets rather than more ledger lines, so the tier reflects what you'll actually encounter on a page. Note: due to keyboard fixed ranges, the extreme notes (C3 on treble staff, C5 on bass staff) fall outside the single-clef keyboard—switch to grand mode to play them.
+- **Tier 4** — adds **ledger-line crawl**. In single-clef mode, the staff extends one octave into the other clef's territory: the treble staff renders down to C3 with stacked ledger lines below; the bass staff renders up to C5 with stacked ledger lines above. Total range stays bounded — past one octave, real piano notation typically uses `8va`/`8vb` brackets rather than more ledger lines, so the tier reflects what you'll actually encounter on a page.
 
   In **grand mode**, tier 4 keeps the C2–C6 range but **fuzzes the clef assignment** in the overlap zone (C3–C5 inclusive): a note at A3 might be drawn on the treble staff with ledger lines below, instead of in its natural position on the bass staff. Notes outside the overlap (C2–B2 always bass; C♯5–C6 always treble) follow the usual rule. The result is that grand-mode tier 4 trains the same ledger-line reading skill without expanding the range.
 
@@ -55,4 +55,4 @@ Per [project conventions](../README.md), the on-screen keyboard adapts at 900px:
 - **Desktop ≥900px** — single continuous keyboard. Grand mode shows 4 octaves (C2–C6); single-clef mode shows 2 octaves, centered.
 - **Mobile <900px** — the keyboard is pannable; one octave is visible at a time, defaulting to the clef's reading area.
 
-The on-screen keyboard's range does **not** shrink at lower tiers — it always covers the full clef range so the user can navigate freely. Only the prompt pool changes with the tier.
+The on-screen keyboard's underlying range follows the tier: tiers 1–3 use the default 2-octave clef range, and tier 4 single-clef expands it by one octave (treble down to C3, bass up to C5) so every crawled prompt is clickable. The keyboard never shrinks below the default — only the prompt pool changes for tiers 1 and 2.
