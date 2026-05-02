@@ -1,5 +1,9 @@
 # Project instructions for Claude
 
+## Docs grow with the code
+
+User-facing app docs live in `docs/`, organized by app surface (one file per view: `practice.md`, `chords.md`, `devices.md`, `settings.md`, plus `README.md`). Whenever you ship a feature that changes a surface's behavior, update the corresponding `docs/*.md` file as part of the same change. The docs should always reflect the current shipped state, not future plans. Internal design specs in `docs/superpowers/` are gitignored working documents and are not a substitute.
+
 ## Prod never changes without the user's go
 
 Nothing that affects production — or anything published beyond this machine — happens without the user's explicit go-ahead. This includes but is not limited to:
