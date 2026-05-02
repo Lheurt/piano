@@ -122,7 +122,11 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
 }
 
 function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760, narrow = false, showPlayhead = true }) {
-  const slotClef = (n) => n.assignedClef || clefForPitch(n.pitch);
+  const slotClef = (n) => {
+    if (n.assignedClef) return n.assignedClef;
+    if (clef !== 'grand') return clef;        // single-clef: render on the visible band
+    return clefForPitch(n.pitch);
+  };
   const trebleSlots = notes.map((n, i) => slotClef(n) === 'treble' ? { n, globalIdx: i } : null);
   const bassSlots   = notes.map((n, i) => slotClef(n) === 'bass'   ? { n, globalIdx: i } : null);
 

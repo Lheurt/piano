@@ -73,7 +73,9 @@ function useNarrow() {
 function PracticeView() {
   const t = window.t;
   const narrow = useNarrow();
-  const initialTier = React.useRef(loadPracticeTier()).current;
+  const initialTierRef = React.useRef(null);
+  if (initialTierRef.current === null) initialTierRef.current = loadPracticeTier();
+  const initialTier = initialTierRef.current;
   const [clef, setClef] = React.useState('grand');
   const [tier, setTier] = React.useState(initialTier);
   const [showTierInfo, setShowTierInfo] = React.useState(false);
