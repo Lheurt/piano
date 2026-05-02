@@ -182,7 +182,8 @@ test('single-clef tier 4 never attaches assignedClef', () => {
     for (let trial = 0; trial < 20; trial++) {
       const notes = N.makePassage(clef, 8, 4);
       for (const n of notes) {
-        assert.equal(n.assignedClef, undefined);
+        assert.equal(n.assignedClef, undefined,
+          `${clef} tier 4 attached assignedClef ${n.assignedClef} to ${n.pitch}`);
       }
     }
   }
