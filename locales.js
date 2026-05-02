@@ -511,7 +511,7 @@
     'help.h.other':               'Autres notations',
     'help.h.highlights':          'Surlignages du clavier',
     'help.block.sight_reading.title': 'Lecture à vue',
-    ‘help.block.sight_reading.body’:  ‘Lisez la note sur la portée, puis jouez-la sur le clavier (à l’écran ou via MIDI). Choisissez une clé — Système, Sol ou Fa — et un niveau de difficulté (1 le plus facile, 4 le plus difficile) pour fixer l’étendue des hauteurs et la présence d’altérations. La tête de lecture avance lorsque la note est correcte.’,
+    'help.block.sight_reading.body':  'Lisez la note sur la portée, puis jouez-la sur le clavier (à l’écran ou via MIDI). Choisissez une clé — Système, Sol ou Fa — et un niveau de difficulté (1 le plus facile, 4 le plus difficile) pour fixer l’étendue des hauteurs et la présence d’altérations. La tête de lecture avance lorsque la note est correcte.',
     'help.block.chords.title':    'Accords',
     'help.block.chords.body.before': 'Jouez l’accord nommé en sélectionnant ses notes sur le clavier (à n’importe quelle octave) puis en appuyant sur ',
     'help.block.chords.body.check':  'Vérifier',
