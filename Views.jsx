@@ -77,7 +77,7 @@ function PracticeView() {
 
   const changeClef = (c) => {
     setClef(c);
-    setNotes(window.makePassage(c, 8, accidentals));
+    setNotes(window.makePassage(c, 8, 3));
     setPlayheadIdx(0);
     setPlayed(null);
   };
@@ -85,13 +85,13 @@ function PracticeView() {
   const toggleAccidentals = () => {
     const next = !accidentals;
     setAccidentals(next);
-    setNotes(window.makePassage(clef, 8, next));
+    setNotes(window.makePassage(clef, 8, 3));
     setPlayheadIdx(0);
     setPlayed(null);
   };
 
   const reset = () => {
-    setNotes(window.makePassage(clef, 8, accidentals));
+    setNotes(window.makePassage(clef, 8, 3));
     setPlayheadIdx(0);
     setPlayed(null);
   };

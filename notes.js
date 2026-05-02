@@ -1,9 +1,13 @@
 // notes.js — random passage generation
-// Exposes: window.makePassage(clef, count, accidentals), window.pitchToMidi(pitch)
+// Dual-environment: works in the browser (populates window.*) and in Node
+// (module.exports). Public API:
+//   makePassage(clef, count, tier) -> [{ pitch, status, assignedClef? }]
+//   tierPool(clef, tier) -> [pitchName, ...]
+//   pitchToMidi(pitch) -> number
 //
-// Treble notes (C4–C6) route to the treble staff via clefForPitch.
-// Bass notes (C2–B3) route to the bass staff.
-// C4 sits on the treble staff (one ledger below), so BASS stops at B3.
+// Tier ranges are inclusive C-to-C MIDI numbers (so "1 octave" includes both
+// Cs as anchors). Tier >= 2 includes both enharmonic spellings of every black
+// key in range. Tier 4 is added in a later task.
 
 (function () {
   var CHROMA = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -17,33 +21,46 @@
     return (parseInt(m[3], 10) + 1) * 12 + pc;
   }
 
-  var TREBLE     = [
-    'C4','D4','E4','F4','G4','A4','B4',
-    'C5','D5','E5','F5','G5','A5','B5','C6'
-  ];
-  var BASS       = [
-    'C2','D2','E2','F2','G2','A2','B2',
-    'C3','D3','E3','F3','G3','A3','B3'
-  ];
-  var TREBLE_ACC = [
-    'C#4','Db4','D#4','Eb4','F#4','Gb4','G#4','Ab4','A#4','Bb4',
-    'C#5','Db5','D#5','Eb5','F#5','Gb5','G#5','Ab5','A#5','Bb5'
-  ];
-  var BASS_ACC   = [
-    'C#2','Db2','D#2','Eb2','F#2','Gb2','G#2','Ab2','A#2','Bb2',
-    'C#3','Db3','D#3','Eb3','F#3','Gb3','G#3','Ab3','A#3','Bb3'
-  ];
+  // [loMidi, hiMidi] inclusive. C2=36, C3=48, C4=60, C5=72, C6=84.
+  var RANGES = {
+    treble: { 1: [60, 72], 2: [60, 72], 3: [60, 84] },
+    bass:   { 1: [48, 60], 2: [48, 60], 3: [36, 60] },
+    grand:  { 1: [48, 72], 2: [48, 72], 3: [36, 84] },
+  };
 
-  function makePassage(clef, count, accidentals) {
+  var SHARP_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  var FLAT_NAMES  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+  var BLACK_PCS   = { 1: true, 3: true, 6: true, 8: true, 10: true };
+
+  function midiPc(m) { return ((m % 12) + 12) % 12; }
+  function midiOctave(m) { return Math.floor(m / 12) - 1; }
+
+  function namesForMidi(m) {
+    var pc = midiPc(m);
+    var oct = midiOctave(m);
+    if (!BLACK_PCS[pc]) return [SHARP_NAMES[pc] + oct];
+    return [SHARP_NAMES[pc] + oct, FLAT_NAMES[pc] + oct];
+  }
+
+  function tierPool(clef, tier) {
+    var range = RANGES[clef] && RANGES[clef][tier];
+    if (!range) throw new Error('No range for clef=' + clef + ' tier=' + tier);
+    var includeAccidentals = tier >= 2;
+    var pool = [];
+    for (var m = range[0]; m <= range[1]; m++) {
+      var isBlack = !!BLACK_PCS[midiPc(m)];
+      if (isBlack && !includeAccidentals) continue;
+      var names = namesForMidi(m);
+      for (var i = 0; i < names.length; i++) pool.push(names[i]);
+    }
+    return pool;
+  }
+
+  function makePassage(clef, count, tier) {
     count = count || 8;
-    var treble = accidentals ? TREBLE.concat(TREBLE_ACC) : TREBLE;
-    var bass   = accidentals ? BASS.concat(BASS_ACC)     : BASS;
-    var pool =
-      clef === 'treble' ? treble :
-      clef === 'bass'   ? bass   :
-      treble.concat(bass);
-
-    var notes    = [];
+    if (tier === undefined) tier = 3;
+    var pool = tierPool(clef, tier);
+    var notes = [];
     var lastMidi = -1;
     for (var i = 0; i < count; i++) {
       var candidates = pool.filter(function (n) { return pMidi(n) !== lastMidi; });
@@ -54,6 +71,12 @@
     return notes;
   }
 
-  window.makePassage = makePassage;
-  window.pitchToMidi = pMidi;
+  var api = {
+    makePassage: makePassage,
+    pitchToMidi: pMidi,
+    tierPool: tierPool,
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  if (typeof window !== 'undefined') Object.assign(window, api);
 }());
