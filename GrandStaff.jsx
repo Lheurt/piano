@@ -38,13 +38,19 @@ function ledgersForY(y) {
 
 function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead }) {
   const lines = [20, 32, 44, 56, 68];
-  const viewTop = -40;             // headroom for ledgers above (tier-4 bass C5 region)
-  const viewBottom = 128;          // room for ledgers below (tier-4 treble C3 region)
+  const yFn = which === 'treble' ? trebleY : bassY;
+  // Per-band margins: keep the default headroom unless this band's notes
+  // require more room (tier-4 ledger-line crawl: treble down to C3 at y=122,
+  // bass up to C5 at y=-34). Each band expands only in the direction it needs.
+  const noteYs = notes.filter(e => e !== null).map(e => yFn(e.n.pitch));
+  const minY = noteYs.length ? Math.min.apply(null, noteYs) : 0;
+  const maxY = noteYs.length ? Math.max.apply(null, noteYs) : 0;
+  const viewTop = Math.min(-16, minY - 12);
+  const viewBottom = Math.max(112, maxY + 12);
   const localHeight = viewBottom - viewTop;
   const startX = narrow ? 50 : 78;
   const endX = width - 14;
   const spacing = notes.length > 0 ? (endX - startX) / (notes.length + 0.5) : 60;
-  const yFn = which === 'treble' ? trebleY : bassY;
 
   return (
     <div className={'staff-band ' + which}>
