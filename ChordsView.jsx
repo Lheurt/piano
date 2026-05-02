@@ -1,30 +1,22 @@
 // ChordsView.jsx — chord identification practice.
 
-const TIER_DESCRIPTIONS = [
-  { tier: 1, title: 'Major & minor triads',   body: 'Roots: C, D, E, F, G, A, B (white keys). Qualities: major and minor.' },
-  { tier: 2, title: 'Diminished & augmented', body: 'Adds ° (diminished) and + (augmented) triads. All 12 roots, including sharps and flats.' },
-  { tier: 3, title: 'Seventh chords',         body: 'Adds maj7, m7, 7 (dominant), m7♭5 (half-diminished), and °7 (fully diminished).' },
-  { tier: 4, title: 'Suspensions & colorations', body: 'Adds sus2, sus4, add9, 6, and m6.' },
-  { tier: 5, title: 'Inversions',             body: 'Same qualities as tier 4, but ~1/3 of chords now have a non-root bass note (slash chords like C/E).' },
-  { tier: 6, title: 'Extended chords',        body: 'Adds 9, maj9, m9, 11, and 13 — chords that reach beyond the octave.' },
-];
-
 function TierInfoPanel({ onClose }) {
+  const t = window.t;
   return (
     <div className="tier-info-panel">
-      <button className="tier-info-close" onClick={onClose} aria-label="Close">×</button>
-      <div className="tier-info-head">Difficulty tiers</div>
+      <button className="tier-info-close" onClick={onClose} aria-label={t('chords.tier_info.close')}>×</button>
+      <div className="tier-info-head">{t('chords.tier_info.title')}</div>
       <div className="tier-info-body">
-        {TIER_DESCRIPTIONS.map(t => (
-          <div className="tier-info-row" key={t.tier}>
-            <span className="tier-info-num">{t.tier}</span>
+        {[1, 2, 3, 4, 5, 6].map(n => (
+          <div className="tier-info-row" key={n}>
+            <span className="tier-info-num">{n}</span>
             <div className="tier-info-text">
-              <div className="tier-info-title">{t.title}</div>
-              <div className="tier-info-body-text">{t.body}</div>
+              <div className="tier-info-title">{t('chords.tier.' + n + '.title')}</div>
+              <div className="tier-info-body-text">{t('chords.tier.' + n + '.body')}</div>
             </div>
           </div>
         ))}
-        <div className="tier-info-note">Each tier is cumulative — higher tiers include everything from lower tiers.</div>
+        <div className="tier-info-note">{t('chords.tier_info.note')}</div>
       </div>
     </div>
   );
@@ -46,37 +38,40 @@ function CheckBadge() {
 
 function ChordHintPanel({ chord }) {
   window.useNamingMode();
+  const t = window.t;
   const e = window.chordExplanation(chord);
   const fmt = window.formatNoteName;
+  const qualityLabel = t('chord.quality.' + chord.quality + '.label');
+  const prose = t('chord.quality.' + chord.quality + '.prose');
   return (
     <div className="chord-hint-panel">
       <ChordStack root={chord.root} quality={chord.quality} bass={chord.bass} />
       <div className="chord-hint-body">
         <div className="chord-hint-row">
-          <span className="chord-hint-label">Root</span>
+          <span className="chord-hint-label">{t('chord_hint.root')}</span>
           <span className="chord-hint-val">{fmt(e.root)}</span>
         </div>
         <div className="chord-hint-row">
-          <span className="chord-hint-label">Quality</span>
-          <span className="chord-hint-val">{e.qualityLabel} <span className="mono chord-hint-sym">({e.qualitySymbol || 'maj'})</span></span>
+          <span className="chord-hint-label">{t('chord_hint.quality')}</span>
+          <span className="chord-hint-val">{qualityLabel} <span className="mono chord-hint-sym">({e.qualitySymbol || t('chord_hint.maj_fallback')})</span></span>
         </div>
         {e.bass && (
           <div className="chord-hint-row">
-            <span className="chord-hint-label">Inversion</span>
-            <span className="chord-hint-val">{fmt(e.bass)} in the bass</span>
+            <span className="chord-hint-label">{t('chord_hint.inversion')}</span>
+            <span className="chord-hint-val">{t('chord_hint.in_the_bass', { tone: fmt(e.bass) })}</span>
           </div>
         )}
-        <div className="chord-hint-section-head mono">Built from</div>
+        <div className="chord-hint-section-head mono">{t('chord_hint.built_from')}</div>
         <div className="chord-hint-intervals">
           {e.intervals.map((iv, i) => (
             <div className="chord-hint-interval" key={i}>
-              <span className="chord-hint-iv-name">{iv.name}</span>
+              <span className="chord-hint-iv-name">{t('chord.interval.' + iv.semitones)}</span>
               <span className="chord-hint-iv-semis mono">+{iv.semitones}</span>
               <span className="chord-hint-iv-tone">{fmt(iv.tone)}</span>
             </div>
           ))}
         </div>
-        <div className="chord-hint-prose">{e.prose}</div>
+        <div className="chord-hint-prose">{prose}</div>
       </div>
     </div>
   );
@@ -84,6 +79,7 @@ function ChordHintPanel({ chord }) {
 
 function ChordsView() {
   window.useNamingMode();
+  const t = window.t;
   const [narrow, setNarrow] = React.useState(() => window.innerWidth < 900);
   React.useEffect(() => {
     const onR = () => setNarrow(window.innerWidth < 900);
@@ -314,27 +310,27 @@ function ChordsView() {
     <div className="pane wide practice-pane">
       <div className="practice-hud">
         <div>
-          <div className="hud-exercise">Chords · Tier {tier}</div>
+          <div className="hud-exercise">{t('chords.hud.title', { tier })}</div>
           <div className="hud-counter">
             {isDone
-              ? `${correct} of ${chords.length} correct`
-              : `Chord ${playheadIdx + 1} of ${chords.length} · ${correct}/${attempted} correct`}
+              ? t('chords.hud.counter_done', { correct, total: chords.length })
+              : t('chords.hud.counter', { n: playheadIdx + 1, total: chords.length, correct, attempted })}
           </div>
         </div>
         <div className="hud-right">
-          <span className="tier-label">Tier</span>
+          <span className="tier-label">{t('chords.tier_label')}</span>
           <button
             className={'tier-info-btn' + (showTierInfo ? ' on' : '')}
             onClick={() => setShowTierInfo(v => !v)}
-            aria-label="About difficulty tiers"
-            title="About difficulty tiers"
+            aria-label={t('chords.tier_about')}
+            title={t('chords.tier_about')}
           >?</button>
           <div className="clef-toggle">
-            {[1, 2, 3, 4, 5, 6].map(t => (
-              <button key={t}
-                className={'clef-btn' + (tier === t ? ' active' : '')}
-                onClick={() => changeTier(t)}>
-                {t}
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <button key={n}
+                className={'clef-btn' + (tier === n ? ' active' : '')}
+                onClick={() => changeTier(n)}>
+                {n}
               </button>
             ))}
           </div>
@@ -346,7 +342,7 @@ function ChordsView() {
       <div className={'chord-prompt' + (feedback && feedback.ok ? ' correct' : '')}>
         {isDone ? (
           <span className="chord-prompt-done mono">
-            {correct} of {chords.length} correct
+            {t('chords.hud.counter_done', { correct, total: chords.length })}
           </span>
         ) : (
           <>
@@ -355,7 +351,7 @@ function ChordsView() {
               className={'explain-link' + (showHint ? ' on' : '')}
               onClick={() => setShowHint(h => !h)}
             >
-              {showHint ? 'Hide explanation' : 'Explain this chord'}
+              {showHint ? t('chords.explain.hide') : t('chords.explain.show')}
             </button>
           </>
         )}
@@ -378,21 +374,21 @@ function ChordsView() {
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
           <div className={'toggle' + (muted ? ' on' : '')} onClick={() => { const v = !muted; setMuted(v); window.setMuted(v); }} />
-          Mute
+          {t('practice.action.mute')}
         </label>
         <div className="spacer" />
-        <button className="btn btn-secondary btn-sm" onClick={playSelection}  disabled={isDone || !!feedback || selected.size === 0}>▸ Play</button>
-        <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone || !!feedback}>Clear</button>
+        <button className="btn btn-secondary btn-sm" onClick={playSelection}  disabled={isDone || !!feedback || selected.size === 0}>{t('chords.action.play')}</button>
+        <button className="btn btn-secondary btn-sm" onClick={clearSelection} disabled={isDone || !!feedback}>{t('chords.action.clear')}</button>
         {!micEnabled && (
           <button
             className="btn btn-primary btn-sm"
             onClick={check}
             disabled={isDone || !!feedback || selected.size === 0}
           >
-            Check
+            {t('chords.action.check')}
           </button>
         )}
-        <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>New passage</button>
+        <button className="btn btn-secondary btn-sm" onClick={newPassage} disabled={!!feedback}>{t('chords.action.new')}</button>
       </div>
     </div>
   );

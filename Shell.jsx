@@ -1,17 +1,18 @@
 // Shell.jsx — app chrome: header + side nav
 
 function Header({ midiConnected, midiDeviceName }) {
+  const t = window.t;
   return (
     <header className="shell-header">
       <div className="wm">Fermata<span className="dot">.</span></div>
       <div className="header-meta">
-        <span>Sight-reading trainer</span>
+        <span>{t('shell.tagline')}</span>
       </div>
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
         <MicButton />
         <div className={'device ' + (midiConnected ? 'connected' : 'disconnected')}>
           <span className="device-dot" />
-          {midiConnected ? (midiDeviceName || 'MIDI device') : 'No MIDI device'}
+          {midiConnected ? (midiDeviceName || t('shell.midi_device')) : t('shell.no_midi_device')}
         </div>
       </div>
     </header>
@@ -36,13 +37,14 @@ function MicButton() {
   // in practice; clamp + amplify for visibility.
   const vu = Math.min(1, state.level * 4);
 
+  const t = window.t;
   return (
     <button className={cls} onClick={onClick}
-            title={state.status === 'error' ? (state.error || 'Mic error') :
-                   state.enabled ? 'Microphone on — click to turn off' :
-                                   'Click to enable microphone'}>
+            title={state.status === 'error' ? (state.error || t('mic.tooltip_error')) :
+                   state.enabled ? t('mic.tooltip_on') :
+                                   t('mic.tooltip_off')}>
       <span className="mic-btn-icon">●</span>
-      <span>Mic</span>
+      <span>{t('mic.label')}</span>
       {state.enabled && (
         <span className="mic-btn-vu" style={{ transform: `scaleX(${vu})` }} />
       )}
@@ -51,17 +53,18 @@ function MicButton() {
 }
 
 function SideNav({ view, setView }) {
+  const t = window.t;
   const items = [
-    { group: 'Study', entries: [
-      { id: 'practice', label: 'Sight-reading' },
-      { id: 'chords',   label: 'Chords' },
+    { group: t('nav.group.study'), entries: [
+      { id: 'practice', label: t('nav.practice') },
+      { id: 'chords',   label: t('nav.chords') },
     ]},
-    { group: 'Setup', entries: [
-      { id: 'devices',  label: 'Devices' },
-      { id: 'settings', label: 'Settings' },
+    { group: t('nav.group.setup'), entries: [
+      { id: 'devices',  label: t('nav.devices') },
+      { id: 'settings', label: t('nav.settings') },
     ]},
-    { group: 'Reference', entries: [
-      { id: 'help',     label: 'Help & legend' },
+    { group: t('nav.group.reference'), entries: [
+      { id: 'help',     label: t('nav.help') },
     ]},
   ];
   return (

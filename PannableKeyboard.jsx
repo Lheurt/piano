@@ -181,7 +181,7 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
             >
               {w.isC && (
                 <span className={'pk-label mono' + (w.midi === 60 ? ' pk-label-mc' : '')}>
-                  {window.formatNoteName(w.name)}{w.midi === 60 ? ' · middle' : ''}
+                  {window.formatNoteName(w.name)}{w.midi === 60 ? ' · ' + window.t('pk.middle') : ''}
                 </span>
               )}
             </div>

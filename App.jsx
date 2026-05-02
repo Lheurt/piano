@@ -1,5 +1,7 @@
 // App.jsx — root component, responsive shell
 function App() {
+  window.useLocale();
+  window.useNamingMode();
   const [narrow, setNarrow] = React.useState(() => window.innerWidth < 900);
   React.useEffect(() => {
     const onR = () => setNarrow(window.innerWidth < 900);
@@ -37,24 +39,24 @@ function App() {
             <MicButton />
             <div className={'device ' + (midiConnected ? 'connected' : 'disconnected')}>
               <span className="device-dot" />
-              {midiConnected ? (midiDeviceName || 'MIDI') : 'No MIDI'}
+              {midiConnected ? (midiDeviceName || window.t('shell.midi')) : window.t('shell.no_midi')}
             </div>
           </div>
         </div>
         <div className="m-scroll">{content}</div>
         <div className="m-tabbar">
           {[
-            { id: 'practice', label: 'Reading',  glyph: '♪' },
-            { id: 'chords',   label: 'Chords',   glyph: '♩' },
-            { id: 'devices',  label: 'Devices',  glyph: '◌' },
-            { id: 'settings', label: 'Settings', glyph: '⚙' },
-            { id: 'help',     label: 'Help',     glyph: '?' },
-          ].map(t => (
-            <button key={t.id}
-              className={'m-tab' + (view === t.id ? ' active' : '')}
-              onClick={() => setView(t.id)}>
-              <span className="m-tab-glyph">{t.glyph}</span>
-              <span className="m-tab-label">{t.label}</span>
+            { id: 'practice', label: window.t('m_tab.practice'), glyph: '♪' },
+            { id: 'chords',   label: window.t('m_tab.chords'),    glyph: '♩' },
+            { id: 'devices',  label: window.t('m_tab.devices'),   glyph: '◌' },
+            { id: 'settings', label: window.t('m_tab.settings'),  glyph: '⚙' },
+            { id: 'help',     label: window.t('m_tab.help'),      glyph: '?' },
+          ].map(tab => (
+            <button key={tab.id}
+              className={'m-tab' + (view === tab.id ? ' active' : '')}
+              onClick={() => setView(tab.id)}>
+              <span className="m-tab-glyph">{tab.glyph}</span>
+              <span className="m-tab-label">{tab.label}</span>
             </button>
           ))}
         </div>
