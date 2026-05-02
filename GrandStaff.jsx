@@ -1,5 +1,6 @@
 // GrandStaff.jsx — renders treble + bass as two visually separated staves.
-// Treble staff: E4..F5 (C5 in 3rd space). Bass staff: G2..A3 (C3 in 2nd space).
+// Treble staff: E4..F5 (C5 in 3rd space), notes range C4..C6 with ledger lines.
+// Bass staff: G2..A3 (C3 in 2nd space), notes range C2..B3 with ledger lines.
 // Notes route to the staff matching their clef; the two bands share horizontal
 // time alignment but are drawn in separate SVG elements with a visible gap.
 
@@ -23,9 +24,23 @@ function clefForPitch(pitch) {
   return stepsFromC4(pitch) >= 0 ? 'treble' : 'bass';
 }
 
+// Ledger lines for any notehead at local y. Both staves span y=20..68;
+// ledgers above are at y=8, -4, -16, … and below are at y=80, 92, 104, ….
+function ledgersForY(y) {
+  const out = [];
+  if (y >= 80) {
+    for (let yL = 80; yL <= y + 3; yL += 12) out.push(yL);
+  } else if (y <= 8) {
+    for (let yL = 8; yL >= y - 3; yL -= 12) out.push(yL);
+  }
+  return out;
+}
+
 function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead }) {
   const lines = [20, 32, 44, 56, 68];
-  const localHeight = 96;
+  const viewTop = -16;            // headroom for ledgers above the staff (C6 region)
+  const viewBottom = 112;          // room for ledgers below (C2 region)
+  const localHeight = viewBottom - viewTop;
   const startX = narrow ? 50 : 78;
   const endX = width - 14;
   const spacing = notes.length > 0 ? (endX - startX) / (notes.length + 0.5) : 60;
@@ -33,7 +48,7 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
 
   return (
     <div className={'staff-band ' + which}>
-      <svg viewBox={`0 0 ${width} ${localHeight}`} width="100%" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox={`0 ${viewTop} ${width} ${localHeight}`} width="100%" preserveAspectRatio="xMidYMid meet">
         {/* Staff lines */}
         <g stroke="#17161a" strokeWidth="1">
           {lines.map((y, i) => <line key={i} x1="0" y1={y} x2={width} y2={y} />)}
@@ -65,17 +80,14 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
           const stemUp = y >= 44;
           const stemY2 = stemUp ? y - 30 : y + 30;
           const stemX = stemUp ? x + 7 : x - 7;
-          const isMiddleC = n.pitch === 'C4';
+          const ledgers = ledgersForY(y);
 
           return (
             <g key={i} opacity={opacity}>
-              {/* Middle C ledger line */}
-              {isMiddleC && which === 'treble' && (
-                <line x1={x - 11} y1={80} x2={x + 11} y2={80} stroke="#17161a" strokeWidth="1" />
-              )}
-              {isMiddleC && which === 'bass' && (
-                <line x1={x - 11} y1={8} x2={x + 11} y2={8} stroke="#17161a" strokeWidth="1" />
-              )}
+              {/* Ledger lines for notes outside the staff */}
+              {ledgers.map((ly, j) => (
+                <line key={j} x1={x - 11} y1={ly} x2={x + 11} y2={ly} stroke="#17161a" strokeWidth="1" />
+              ))}
               {/* Accidental */}
               {acc === '#' && <text x={x - 22} y={y + 5} fontFamily="Georgia, serif" fontSize="22" fill={fill}>♯</text>}
               {acc === 'b' && <text x={x - 22} y={y + 5} fontFamily="Georgia, serif" fontSize="22" fill={fill}>♭</text>}

@@ -1,0 +1,107 @@
+/* pannable-keyboard.css — styles for the shared <PannableKeyboard>. */
+
+.pk { width: 100%; font-family: var(--font-sans); user-select: none; }
+
+/* readout (full-map only) */
+.pk-readout {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 0.04em; color: var(--ink-1);
+  margin-bottom: 6px; height: 18px;
+}
+.pk-readout-sep { color: var(--fg-subtle); }
+.pk-readout-tag {
+  margin-left: auto; font-family: var(--font-sans); font-size: 9px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+}
+
+/* minimap */
+.pk-mm { position: relative; border: 1px solid var(--paper-3);
+  background: var(--paper-1); cursor: pointer; touch-action: none;
+}
+.pk-mm-full { height: 38px; margin-bottom: 22px; }
+.pk-mm-mini { height: 10px; margin-bottom: 6px; }
+
+.pk-mm-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--paper-3); }
+.pk-mm-tick-label {
+  position: absolute; bottom: -16px; transform: translateX(-50%);
+  font-size: 9px; color: var(--fg-subtle); letter-spacing: 0.04em; pointer-events: none;
+}
+
+.pk-mm-dot {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ink-2); pointer-events: none; z-index: 2;
+}
+.pk-mm-mini .pk-mm-dot { width: 5px; height: 5px; }
+.pk-mm-dot-correct { background: var(--consonance); }
+.pk-mm-dot-incorrect { background: var(--dissonance); }
+.pk-mm-dot-active { background: var(--info); }
+
+.pk-mm-viewport {
+  position: absolute; top: -1px; bottom: -1px;
+  border: 1.5px solid var(--ink-1); background: rgba(23, 22, 26, 0.06);
+  z-index: 1; cursor: grab; touch-action: none;
+}
+.pk-mm-viewport-anim { transition: left 200ms var(--ease-out), width 200ms var(--ease-out); }
+.pk-mm-viewport-drag { cursor: grabbing; background: rgba(23, 22, 26, 0.12); }
+
+/* keyboard row */
+.pk-row-wrap { position: relative; }
+.pk-row {
+  position: relative; border: 1px solid var(--ink-3); background: var(--paper-0);
+  overflow: hidden; cursor: grab; touch-action: pan-y;
+}
+.pk-row-wrap-drag .pk-row { cursor: grabbing; }
+
+.pk-white {
+  background: var(--paper-0); border-right: 1px solid var(--ink-4);
+  cursor: pointer; transition: background var(--dur-fast) var(--ease-out);
+  box-sizing: border-box;
+}
+.pk-white:hover { background: var(--paper-1); }
+.pk-row-wrap-drag .pk-white, .pk-row-wrap-drag .pk-black { cursor: grabbing; }
+
+.pk-label {
+  position: absolute; bottom: 8px; left: 0; right: 0; text-align: center;
+  font-size: 10px; color: var(--fg-subtle); pointer-events: none; letter-spacing: 0.03em;
+}
+.pk-label-mc { color: var(--ink-1); font-size: 9px; }
+
+.pk-black {
+  position: absolute; top: 0; background: var(--ink-1);
+  border: 1px solid var(--ink-1); border-top: none; cursor: pointer; z-index: 2;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.pk-black:hover { background: #2a282f; }
+
+/* states */
+.pk-white.pk-correct { background: var(--consonance-wash); }
+.pk-white.pk-correct::after, .pk-white.pk-incorrect::after, .pk-white.pk-active::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+}
+.pk-white.pk-correct::after { background: var(--consonance); }
+.pk-white.pk-incorrect { background: var(--dissonance-wash); }
+.pk-white.pk-incorrect::after { background: var(--dissonance); }
+.pk-white.pk-active { background: var(--info-wash); }
+.pk-white.pk-active::after { background: var(--info); }
+.pk-white.pk-selected { background: var(--paper-2); box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+
+.pk-black.pk-correct { background: var(--consonance); }
+.pk-black.pk-incorrect { background: var(--accent-ink); }
+.pk-black.pk-active { background: var(--info); }
+.pk-black.pk-selected { background: var(--ink-2); box-shadow: inset 0 0 0 1.5px var(--paper-3); }
+
+/* missing — amber outline on chord-feedback for tones the user did not play */
+.pk-white.pk-missing { background: var(--paper-0); box-shadow: inset 0 0 0 2px #c7a14a; }
+.pk-black.pk-missing { background: var(--ink-3);   box-shadow: inset 0 0 0 2px #c7a14a; }
+
+/* edge markers */
+.pk-edge {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 6px; padding: 4px 8px;
+  background: var(--paper-0); border: 1px solid var(--accent-ink);
+  font-size: 11px; z-index: 3; letter-spacing: 0.02em; color: var(--accent);
+}
+.pk-edge-left { left: 4px; }
+.pk-edge-right { right: 4px; }
+.pk-edge-arrow { font-family: var(--font-sans); font-weight: 600; }
