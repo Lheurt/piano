@@ -68,6 +68,7 @@ function pkPickLeftEdge(midis, lo, hi, visibleSemi, fallback) {
 // PlayableRow — the keyboard surface itself, with drag-to-pan.
 // =====================================================================
 function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height = 180, blackHeight = 110 }) {
+  window.useNamingMode();
   // n octaves spans 7n+1 visible whites (both endpoint Cs counted).
   const visibleWhites = (visibleSemi / 12) * 7 + 1;
   // Render the full [lo, hi] range once so whites[0] is a stable anchor.
@@ -180,7 +181,7 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
             >
               {w.isC && (
                 <span className={'pk-label mono' + (w.midi === 60 ? ' pk-label-mc' : '')}>
-                  {w.name}{w.midi === 60 ? ' · middle' : ''}
+                  {window.formatNoteName(w.name)}{w.midi === 60 ? ' · middle' : ''}
                 </span>
               )}
             </div>
@@ -219,6 +220,7 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
 // outside the visible window.
 // =====================================================================
 function PKEdgeMarkers({ leftC, visibleSemi, highlighted }) {
+  window.useNamingMode();
   const visibleLo = leftC;
   const visibleHi = leftC + visibleSemi;
   const offLeft = [];
@@ -236,12 +238,12 @@ function PKEdgeMarkers({ leftC, visibleSemi, highlighted }) {
       {offLeft.length > 0 && (
         <div className="pk-edge pk-edge-left">
           <span className="pk-edge-arrow">←</span>
-          <span className="mono">{offLeft.map(x => x.name).join(' ')}</span>
+          <span className="mono">{offLeft.map(x => window.formatNoteName(x.name)).join(' ')}</span>
         </div>
       )}
       {offRight.length > 0 && (
         <div className="pk-edge pk-edge-right">
-          <span className="mono">{offRight.map(x => x.name).join(' ')}</span>
+          <span className="mono">{offRight.map(x => window.formatNoteName(x.name)).join(' ')}</span>
           <span className="pk-edge-arrow">→</span>
         </div>
       )}
@@ -253,6 +255,7 @@ function PKEdgeMarkers({ leftC, visibleSemi, highlighted }) {
 // Minimap — full or mini variant.
 // =====================================================================
 function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onScrubStart, onScrubMove, onScrubEnd, scrubbing, animating, variant = 'full' }) {
+  window.useNamingMode();
   const minimapRef = React.useRef(null);
   const fullRange = hi - lo;
 
@@ -316,7 +319,7 @@ function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onS
           <React.Fragment key={oct}>
             <div className="pk-mm-tick" style={{ left: `${pct}%` }} />
             {variant === 'full' && (
-              <span className="pk-mm-tick-label mono" style={{ left: `${pct}%` }}>C{oct}</span>
+              <span className="pk-mm-tick-label mono" style={{ left: `${pct}%` }}>{window.formatNoteName('C')}{oct}</span>
             )}
           </React.Fragment>
         );
@@ -417,6 +420,7 @@ function PannableKeyboard({
     setLeftMidi(clamp(next));
   };
 
+  window.useNamingMode();
   const lowName = window.midiToName(Math.round(leftMidi));
   const highName = window.midiToName(Math.round(leftMidi) + visibleSemi);
 
@@ -424,9 +428,9 @@ function PannableKeyboard({
     <div className={'pk pk-map-' + mapVariant}>
       {showReadout && mapVariant === 'full' && (
         <div className="pk-readout mono">
-          <span>{lowName}</span>
+          <span>{window.formatNoteName(lowName)}</span>
           <span className="pk-readout-sep">–</span>
-          <span>{highName}</span>
+          <span>{window.formatNoteName(highName)}</span>
           {(scrubbing || keyboardDragging) && (
             <span className="pk-readout-tag">{keyboardDragging ? 'panning' : 'dragging'}</span>
           )}

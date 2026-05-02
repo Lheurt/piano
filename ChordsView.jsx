@@ -45,14 +45,16 @@ function CheckBadge() {
 }
 
 function ChordHintPanel({ chord }) {
+  window.useNamingMode();
   const e = window.chordExplanation(chord);
+  const fmt = window.formatNoteName;
   return (
     <div className="chord-hint-panel">
       <ChordStack root={chord.root} quality={chord.quality} bass={chord.bass} />
       <div className="chord-hint-body">
         <div className="chord-hint-row">
           <span className="chord-hint-label">Root</span>
-          <span className="chord-hint-val">{e.root}</span>
+          <span className="chord-hint-val">{fmt(e.root)}</span>
         </div>
         <div className="chord-hint-row">
           <span className="chord-hint-label">Quality</span>
@@ -61,7 +63,7 @@ function ChordHintPanel({ chord }) {
         {e.bass && (
           <div className="chord-hint-row">
             <span className="chord-hint-label">Inversion</span>
-            <span className="chord-hint-val">{e.bass} in the bass</span>
+            <span className="chord-hint-val">{fmt(e.bass)} in the bass</span>
           </div>
         )}
         <div className="chord-hint-section-head mono">Built from</div>
@@ -70,7 +72,7 @@ function ChordHintPanel({ chord }) {
             <div className="chord-hint-interval" key={i}>
               <span className="chord-hint-iv-name">{iv.name}</span>
               <span className="chord-hint-iv-semis mono">+{iv.semitones}</span>
-              <span className="chord-hint-iv-tone">{iv.tone}</span>
+              <span className="chord-hint-iv-tone">{fmt(iv.tone)}</span>
             </div>
           ))}
         </div>
@@ -81,6 +83,7 @@ function ChordHintPanel({ chord }) {
 }
 
 function ChordsView() {
+  window.useNamingMode();
   const [narrow, setNarrow] = React.useState(() => window.innerWidth < 900);
   React.useEffect(() => {
     const onR = () => setNarrow(window.innerWidth < 900);
@@ -347,7 +350,7 @@ function ChordsView() {
           </span>
         ) : (
           <>
-            <span className="chord-prompt-name">{current.displayName}</span>
+            <span className="chord-prompt-name">{window.formatNoteName(current.displayName)}</span>
             <button
               className={'explain-link' + (showHint ? ' on' : '')}
               onClick={() => setShowHint(h => !h)}

@@ -320,7 +320,8 @@ function MicSettings() {
 /* ---------- Settings ---------- */
 function SettingsView() {
   const [sound, setSound] = React.useState(true);
-  const [latinNames, setLatinNames] = React.useState(false);
+  const namingMode = window.useNamingMode();
+  const solfege = namingMode === 'solfege';
   const [showHints, setShowHints] = React.useState(true);
   const [strict, setStrict] = React.useState(false);
 
@@ -333,8 +334,8 @@ function SettingsView() {
         <p>How the staff and keyboard render.</p>
         <div className="setting-row">
           <div className="label">Note names</div>
-          <div className="help">Use Do-Re-Mi (solfège) instead of C-D-E. Affects keyboard labels and prompts.</div>
-          <div className="control"><div className={'toggle' + (latinNames ? ' on' : '')} onClick={() => setLatinNames(v => !v)} /></div>
+          <div className="help">Use Do-Ré-Mi (solfège) instead of C-D-E. Affects keyboard labels and prompts.</div>
+          <div className="control"><div className={'toggle' + (solfege ? ' on' : '')} onClick={() => window.namingStore.setMode(solfege ? 'english' : 'solfege')} /></div>
         </div>
         <div className="setting-row">
           <div className="label">Show note labels</div>
@@ -395,6 +396,8 @@ function SettingsView() {
 
 /* ---------- Help & legend ---------- */
 function HelpView() {
+  window.useNamingMode();
+  const fmt = window.formatNoteName;
   return (
     <div className="pane help-pane">
       <PaneHeader
@@ -412,7 +415,7 @@ function HelpView() {
 
       <div className="help-block">
         <div className="help-block-title">Chords</div>
-        <p>Play the named chord by selecting its notes on the keyboard (any octave) and pressing <em>Check</em>. Pick a tier (1–6) to set difficulty; the <span className="help-inline-btn">?</span> next to the tier buttons explains each level. The <span className="help-inline-btn">?</span> next to the chord name opens a hint for that specific chord. Slash chords (e.g., <span className="mono">C/E</span>) require the bass note to be the lowest pitch you play.</p>
+        <p>Play the named chord by selecting its notes on the keyboard (any octave) and pressing <em>Check</em>. Pick a tier (1–6) to set difficulty; the <span className="help-inline-btn">?</span> next to the tier buttons explains each level. The <span className="help-inline-btn">?</span> next to the chord name opens a hint for that specific chord. Slash chords (e.g., <span className="mono">{fmt('C/E')}</span>) require the bass note to be the lowest pitch you play.</p>
       </div>
 
       <div className="help-block">
@@ -452,7 +455,7 @@ function HelpView() {
           <div className="legend-row" key={i}>
             <span className="legend-sym mono">{sym}</span>
             <span className="legend-name">{name}</span>
-            <span className="legend-ex mono">{ex}</span>
+            <span className="legend-ex mono">{fmt(ex)}</span>
           </div>
         ))}
       </div>
@@ -462,17 +465,17 @@ function HelpView() {
         <div className="legend-row">
           <span className="legend-sym mono">X/Y</span>
           <span className="legend-name">slash chord — chord X with Y as the lowest note</span>
-          <span className="legend-ex mono">C/E</span>
+          <span className="legend-ex mono">{fmt('C/E')}</span>
         </div>
         <div className="legend-row">
           <span className="legend-sym mono">♯</span>
           <span className="legend-name">sharp — raised a semitone</span>
-          <span className="legend-ex mono">F♯</span>
+          <span className="legend-ex mono">{fmt('F♯')}</span>
         </div>
         <div className="legend-row">
           <span className="legend-sym mono">♭</span>
           <span className="legend-name">flat — lowered a semitone</span>
-          <span className="legend-ex mono">B♭</span>
+          <span className="legend-ex mono">{fmt('B♭')}</span>
         </div>
       </div>
 
