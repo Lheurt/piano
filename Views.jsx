@@ -28,6 +28,38 @@ function PaneHeader({ eyebrow, title, sub, right }) {
 
 /* ---------- Practice — the primary surface ---------- */
 
+const PRACTICE_TIER_KEY = 'fermata.practice.tier';
+const PRACTICE_DEFAULT_TIER = 3;
+
+function loadPracticeTier() {
+  if (typeof localStorage === 'undefined') return PRACTICE_DEFAULT_TIER;
+  const raw = localStorage.getItem(PRACTICE_TIER_KEY);
+  const n = parseInt(raw, 10);
+  return (n >= 1 && n <= 4) ? n : PRACTICE_DEFAULT_TIER;
+}
+
+function PracticeTierInfoPanel({ onClose }) {
+  const t = window.t;
+  return (
+    <div className="tier-info-panel">
+      <button className="tier-info-close" onClick={onClose} aria-label={t('practice.tier_info.close')}>×</button>
+      <div className="tier-info-head">{t('practice.tier_info.title')}</div>
+      <div className="tier-info-body">
+        {[1, 2, 3, 4].map(n => (
+          <div className="tier-info-row" key={n}>
+            <span className="tier-info-num">{n}</span>
+            <div className="tier-info-text">
+              <div className="tier-info-title">{t('practice.tier.' + n + '.title')}</div>
+              <div className="tier-info-body-text">{t('practice.tier.' + n + '.body')}</div>
+            </div>
+          </div>
+        ))}
+        <div className="tier-info-note">{t('practice.tier_info.note')}</div>
+      </div>
+    </div>
+  );
+}
+
 function useNarrow() {
   const [narrow, setNarrow] = React.useState(() => window.innerWidth < 900);
   React.useEffect(() => {
@@ -42,12 +74,19 @@ function PracticeView() {
   const t = window.t;
   const narrow = useNarrow();
   const [clef, setClef] = React.useState('grand');
-  const [accidentals, setAccidentals] = React.useState(false);
-  const [notes, setNotes] = React.useState(() => window.makePassage('grand'));
+  const [tier, setTier] = React.useState(loadPracticeTier);
+  const [showTierInfo, setShowTierInfo] = React.useState(false);
+  const [notes, setNotes] = React.useState(() => window.makePassage('grand', 8, loadPracticeTier()));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [played, setPlayed] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
   const [muted, setMuted] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(PRACTICE_TIER_KEY, String(tier));
+    }
+  }, [tier]);
 
   const isDone  = playheadIdx >= notes.length;
   const current = notes[playheadIdx];
@@ -77,21 +116,20 @@ function PracticeView() {
 
   const changeClef = (c) => {
     setClef(c);
-    setNotes(window.makePassage(c, 8, 3));
+    setNotes(window.makePassage(c, 8, tier));
     setPlayheadIdx(0);
     setPlayed(null);
   };
 
-  const toggleAccidentals = () => {
-    const next = !accidentals;
-    setAccidentals(next);
-    setNotes(window.makePassage(clef, 8, 3));
+  const changeTier = (n) => {
+    setTier(n);
+    setNotes(window.makePassage(clef, 8, n));
     setPlayheadIdx(0);
     setPlayed(null);
   };
 
   const reset = () => {
-    setNotes(window.makePassage(clef, 8, 3));
+    setNotes(window.makePassage(clef, 8, tier));
     setPlayheadIdx(0);
     setPlayed(null);
   };
@@ -141,12 +179,26 @@ function PracticeView() {
               </button>
             ))}
           </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
-            <div className={'toggle' + (accidentals ? ' on' : '')} onClick={toggleAccidentals} />
-            ♯♭
-          </label>
+          <span className="tier-label">{t('practice.tier_label')}</span>
+          <button
+            className={'tier-info-btn' + (showTierInfo ? ' on' : '')}
+            onClick={() => setShowTierInfo(v => !v)}
+            aria-label={t('practice.tier_about')}
+            title={t('practice.tier_about')}
+          >?</button>
+          <div className="clef-toggle">
+            {[1, 2, 3, 4].map(n => (
+              <button key={n}
+                className={'clef-btn' + (tier === n ? ' active' : '')}
+                onClick={() => changeTier(n)}>
+                {n}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {showTierInfo && <PracticeTierInfoPanel onClose={() => setShowTierInfo(false)} />}
 
       <div style={{ position: 'relative' }}>
         <GrandStaff notes={notes} playheadIndex={playheadIdx} clef={clef} width={760} narrow={narrow} showPlayhead={showHint} />
