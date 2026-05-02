@@ -73,10 +73,11 @@ function useNarrow() {
 function PracticeView() {
   const t = window.t;
   const narrow = useNarrow();
+  const initialTier = React.useRef(loadPracticeTier()).current;
   const [clef, setClef] = React.useState('grand');
-  const [tier, setTier] = React.useState(loadPracticeTier);
+  const [tier, setTier] = React.useState(initialTier);
   const [showTierInfo, setShowTierInfo] = React.useState(false);
-  const [notes, setNotes] = React.useState(() => window.makePassage('grand', 8, loadPracticeTier()));
+  const [notes, setNotes] = React.useState(() => window.makePassage('grand', 8, initialTier));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [played, setPlayed] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
