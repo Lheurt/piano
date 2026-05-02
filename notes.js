@@ -10,17 +10,6 @@
 // key in range. Tier 4 is added in a later task.
 
 (function () {
-  var CHROMA = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-
-  function pMidi(p) {
-    var m = p.match(/^([A-G])([#b]?)(\d)$/);
-    if (!m) return -1;
-    var pc = CHROMA.indexOf(m[1]);
-    if (m[2] === '#') pc++;
-    if (m[2] === 'b') pc--;
-    return (parseInt(m[3], 10) + 1) * 12 + pc;
-  }
-
   // [loMidi, hiMidi] inclusive. C2=36, C3=48, C4=60, C5=72, C6=84.
   var RANGES = {
     treble: { 1: [60, 72], 2: [60, 72], 3: [60, 84] },
@@ -31,6 +20,15 @@
   var SHARP_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   var FLAT_NAMES  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
   var BLACK_PCS   = { 1: true, 3: true, 6: true, 8: true, 10: true };
+
+  function pMidi(p) {
+    var m = p.match(/^([A-G])([#b]?)(\d)$/);
+    if (!m) return -1;
+    var pc = SHARP_NAMES.indexOf(m[1]);
+    if (m[2] === '#') pc++;
+    if (m[2] === 'b') pc--;
+    return (parseInt(m[3], 10) + 1) * 12 + pc;
+  }
 
   function midiPc(m) { return ((m % 12) + 12) % 12; }
   function midiOctave(m) { return Math.floor(m / 12) - 1; }
