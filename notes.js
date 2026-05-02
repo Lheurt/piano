@@ -58,12 +58,21 @@
     count = count || 8;
     if (tier === undefined) tier = 3;
     var pool = tierPool(clef, tier);
+    var fuzzGrandClef = (clef === 'grand' && tier === 4);
     var notes = [];
     var lastMidi = -1;
     for (var i = 0; i < count; i++) {
       var candidates = pool.filter(function (n) { return pMidi(n) !== lastMidi; });
       var pick = candidates[Math.floor(Math.random() * candidates.length)];
-      notes.push({ pitch: pick, status: 'pending' });
+      var note = { pitch: pick, status: 'pending' };
+      if (fuzzGrandClef) {
+        var midi = pMidi(pick);
+        // Overlap zone is C3..C5 inclusive (MIDI 48..72).
+        if (midi >= 48 && midi <= 72) {
+          note.assignedClef = Math.random() < 0.5 ? 'treble' : 'bass';
+        }
+      }
+      notes.push(note);
       lastMidi = pMidi(pick);
     }
     return notes;

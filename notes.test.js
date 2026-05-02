@@ -124,3 +124,66 @@ test('tier 4 grand = C2–C6 (same range as tier 3)', () => {
   // Same shape as tier 3 grand.
   assert.equal(pool.length, 69);
 });
+
+test('grand tier 4 attaches assignedClef in the overlap zone (C3–C5)', () => {
+  let inOverlap = 0;
+  let withClef = 0;
+  let outsideOverlap = 0;
+  for (let trial = 0; trial < 100; trial++) {
+    const notes = N.makePassage('grand', 8, 4);
+    for (const n of notes) {
+      const m = N.pitchToMidi(n.pitch);
+      if (m >= 48 && m <= 72) {
+        inOverlap++;
+        if (n.assignedClef === 'treble' || n.assignedClef === 'bass') withClef++;
+      } else {
+        outsideOverlap++;
+        assert.equal(n.assignedClef, undefined,
+          `${n.pitch} (midi ${m}) is outside the overlap but got clef ${n.assignedClef}`);
+      }
+    }
+  }
+  assert.ok(inOverlap > 0, 'expected some overlap-zone notes across 100 trials');
+  assert.ok(outsideOverlap > 0, 'expected some outside-overlap notes across 100 trials');
+  assert.equal(withClef, inOverlap,
+    'every overlap-zone note in grand tier 4 must have an assignedClef');
+});
+
+test('grand tier 4 fuzzes both clef choices', () => {
+  // Across many trials the overlap-zone clef should land both treble and bass.
+  let treble = 0, bass = 0;
+  for (let trial = 0; trial < 200; trial++) {
+    const notes = N.makePassage('grand', 8, 4);
+    for (const n of notes) {
+      if (n.assignedClef === 'treble') treble++;
+      if (n.assignedClef === 'bass') bass++;
+    }
+  }
+  assert.ok(treble > 0, 'expected at least one treble assignment');
+  assert.ok(bass > 0, 'expected at least one bass assignment');
+});
+
+test('tiers 1–3 never attach assignedClef (any clef)', () => {
+  for (const clef of ['treble','bass','grand']) {
+    for (const tier of [1, 2, 3]) {
+      for (let trial = 0; trial < 20; trial++) {
+        const notes = N.makePassage(clef, 8, tier);
+        for (const n of notes) {
+          assert.equal(n.assignedClef, undefined,
+            `${clef} tier ${tier} attached assignedClef ${n.assignedClef} to ${n.pitch}`);
+        }
+      }
+    }
+  }
+});
+
+test('single-clef tier 4 never attaches assignedClef', () => {
+  for (const clef of ['treble','bass']) {
+    for (let trial = 0; trial < 20; trial++) {
+      const notes = N.makePassage(clef, 8, 4);
+      for (const n of notes) {
+        assert.equal(n.assignedClef, undefined);
+      }
+    }
+  }
+});
