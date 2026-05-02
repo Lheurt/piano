@@ -345,11 +345,11 @@
     'practice.tier.1.title':         'Niveau 1 — portée de base, naturelles',
     'practice.tier.1.body':          'Une octave centrée sur le do central : C4–C5 en clé de sol, C3–C4 en clé de fa. Naturelles uniquement.',
     'practice.tier.2.title':         'Niveau 2 — portée de base, avec altérations',
-    'practice.tier.2.body':          'Même étendue qu\'au niveau 1, avec dièses et bémols. Les deux orthographes de chaque touche noire apparaissent.',
+    'practice.tier.2.body':          'Même étendue qu’au niveau 1, avec dièses et bémols. Les deux orthographes de chaque touche noire apparaissent.',
     'practice.tier.3.title':         'Niveau 3 — étendue complète',
     'practice.tier.3.body':          'Deux octaves par clé (C4–C6 en sol, C2–C4 en fa ; quatre octaves en système). Altérations actives. Niveau par défaut.',
     'practice.tier.4.title':         'Niveau 4 — lignes supplémentaires',
-    'practice.tier.4.body':          'La clé de sol descend jusqu\'à C3 avec des lignes supplémentaires en dessous ; la clé de fa monte jusqu\'à C5 avec des lignes au-dessus. En mode système, les notes médianes peuvent apparaître sur l\'une ou l\'autre portée.',
+    'practice.tier.4.body':          'La clé de sol descend jusqu’à C3 avec des lignes supplémentaires en dessous ; la clé de fa monte jusqu’à C5 avec des lignes au-dessus. En mode système, les notes médianes peuvent apparaître sur l’une ou l’autre portée.',
 
     'chords.hud.title':           'Accords · Niveau {tier}',
     'chords.hud.counter':         'Accord {n} sur {total} · {correct}/{attempted} corrects',
