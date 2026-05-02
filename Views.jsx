@@ -169,7 +169,31 @@ function PracticeView() {
         ) : null}
       </div>
 
-      <TwoOctaveKeyboard highlighted={highlighted} onKey={onKey} clef={clef} />
+      {(() => {
+        // Underlying range matches the clef's full 2-octave staff range so all
+        // prompts are reachable. On mobile the visible window stays at 1 octave
+        // (pan to scroll); on desktop the full 2 octaves fit at once.
+        const kb =
+          clef === 'treble' ? { lo: 60, hi: 84,
+                                visibleSemi: narrow ? 12 : 24,
+                                defaultLeftC: 60 } :
+          clef === 'bass'   ? { lo: 36, hi: 60,
+                                visibleSemi: narrow ? 12 : 24,
+                                defaultLeftC: narrow ? 48 : 36 } :
+                              { lo: 36, hi: 84,
+                                visibleSemi: narrow ? 12 : 48,
+                                defaultLeftC: narrow ? 60 : 36 };
+        return (
+          <PannableKeyboard
+            {...kb}
+            highlighted={highlighted}
+            focusMidis={current ? [window.nameToMidi(current.pitch)].filter(m => m != null) : []}
+            onKey={onKey}
+            autoCenterMode="prompt"
+            mapVariant="full"
+          />
+        );
+      })()}
 
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>

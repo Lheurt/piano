@@ -81,6 +81,13 @@ function ChordHintPanel({ chord }) {
 }
 
 function ChordsView() {
+  const [narrow, setNarrow] = React.useState(() => window.innerWidth < 900);
+  React.useEffect(() => {
+    const onR = () => setNarrow(window.innerWidth < 900);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+
   const [tier, setTier] = React.useState(1);
   const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
@@ -235,6 +242,7 @@ function ChordsView() {
   const check = () => {
     if (isDone || feedback) return;
     if (selected.size === 0) return;
+    playSelection();
     const result = window.validateChord(selected, current);
     setFeedback(result);
     setTimeout(() => {
@@ -353,7 +361,16 @@ function ChordsView() {
 
       {showHint && !isDone && current && <ChordHintPanel chord={current} />}
 
-      <TwoOctaveKeyboard highlighted={highlighted} onKey={onKey} />
+      <PannableKeyboard
+        lo={36} hi={84}
+        defaultLeftC={narrow ? 60 : 36}
+        visibleSemi={narrow ? 12 : 48}
+        highlighted={highlighted}
+        focusMidis={[]}
+        onKey={onKey}
+        autoCenterMode="prompt"
+        mapVariant="full"
+      />
 
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>

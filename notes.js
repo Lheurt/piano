@@ -1,8 +1,8 @@
 // notes.js — random passage generation
 // Exposes: window.makePassage(clef, count, accidentals), window.pitchToMidi(pitch)
 //
-// Treble notes (C4–C5) route to the treble staff via clefForPitch.
-// Bass notes (C3–B3) route to the bass staff.
+// Treble notes (C4–C6) route to the treble staff via clefForPitch.
+// Bass notes (C2–B3) route to the bass staff.
 // C4 sits on the treble staff (one ledger below), so BASS stops at B3.
 
 (function () {
@@ -17,10 +17,22 @@
     return (parseInt(m[3], 10) + 1) * 12 + pc;
   }
 
-  var TREBLE     = ['C4','D4','E4','F4','G4','A4','B4','C5'];
-  var BASS       = ['C3','D3','E3','F3','G3','A3','B3'];
-  var TREBLE_ACC = ['C#4','Db4','D#4','Eb4','F#4','Gb4','G#4','Ab4','A#4','Bb4'];
-  var BASS_ACC   = ['C#3','Db3','D#3','Eb3','F#3','Gb3','G#3','Ab3','A#3','Bb3'];
+  var TREBLE     = [
+    'C4','D4','E4','F4','G4','A4','B4',
+    'C5','D5','E5','F5','G5','A5','B5','C6'
+  ];
+  var BASS       = [
+    'C2','D2','E2','F2','G2','A2','B2',
+    'C3','D3','E3','F3','G3','A3','B3'
+  ];
+  var TREBLE_ACC = [
+    'C#4','Db4','D#4','Eb4','F#4','Gb4','G#4','Ab4','A#4','Bb4',
+    'C#5','Db5','D#5','Eb5','F#5','Gb5','G#5','Ab5','A#5','Bb5'
+  ];
+  var BASS_ACC   = [
+    'C#2','Db2','D#2','Eb2','F#2','Gb2','G#2','Ab2','A#2','Bb2',
+    'C#3','Db3','D#3','Eb3','F#3','Gb3','G#3','Ab3','A#3','Bb3'
+  ];
 
   function makePassage(clef, count, accidentals) {
     count = count || 8;

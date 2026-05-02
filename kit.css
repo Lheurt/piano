@@ -140,96 +140,6 @@ html, body { margin: 0; height: 100%; background: var(--paper-0); }
 .card.hoverable { cursor: pointer; }
 .card.hoverable:hover { background: var(--paper-1); }
 
-/* ---------- Keyboard ------------------------------------------------ */
-.kb-continuous { display: flex; border: 1px solid var(--ink-3); max-width: 680px; margin: 0 auto; }
-.kb-continuous.single { max-width: calc(680px * 8 / 15); }
-.kb-continuous > .keyboard-wrap { flex: 1; border: none; border-right: 1px solid var(--ink-2); }
-.kb-continuous > .keyboard-wrap:last-child { border-right: none; }
-
-.kb-split { display: flex; flex-direction: column; gap: 12px; }
-.kb-split-row { display: flex; flex-direction: column; }
-.kb-clef-label {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  color: var(--fg-muted);
-  padding: 0 0 4px 2px;
-  display: flex; align-items: baseline; gap: 10px;
-}
-.kb-clef-label .mono {
-  font-family: var(--font-sans);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--fg-subtle);
-}
-
-.keyboard-wrap { border: 1px solid var(--ink-3); background: var(--paper-0); display: flex; position: relative; user-select: none; }
-.white-key {
-  flex: 1;
-  height: 180px;
-  border-right: 1px solid var(--ink-4);
-  background: var(--paper-0);
-  box-shadow: inset 0 -3px 0 var(--key-white-shadow);
-  position: relative;
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out);
-}
-.keyboard-wrap.compact .white-key { height: 100px; }
-.white-key:last-child { border-right: none; }
-.white-key:hover { background: var(--paper-1); }
-.white-key:active { box-shadow: inset 0 -1px 0 var(--key-white-shadow); transform: translateY(1px); }
-.white-key .kl {
-  position: absolute;
-  bottom: 10px; left: 0; right: 0;
-  text-align: center;
-  font-size: 11px;
-  color: var(--fg-subtle);
-}
-.white-key.active { background: var(--info-wash); }
-.white-key.active::after {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  background: var(--info);
-}
-.white-key.correct { background: var(--consonance-wash); }
-.white-key.correct::after { content: ''; position:absolute; left:0; right:0; top:0; height: 3px; background: var(--consonance); }
-.white-key.incorrect { background: var(--dissonance-wash); }
-.white-key.incorrect::after { content: ''; position:absolute; left:0; right:0; top:0; height: 3px; background: var(--dissonance); }
-
-.black-key {
-  position: absolute;
-  top: 0;
-  width: 30px;
-  height: 108px;
-  background: var(--ink-0);
-  border: 1px solid #000;
-  box-shadow: inset 0 -4px 0 rgba(255,255,255,0.08);
-  cursor: pointer;
-  z-index: 2;
-  transition: background var(--dur-fast) var(--ease-out);
-}
-.keyboard-wrap.compact .black-key { height: 60px; width: 26px; }
-.black-key:hover { background: #2a282f; }
-.black-key:active { transform: translateY(1px); }
-.black-key.active { background: var(--info); }
-.black-key.active::after {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  background: #a8bed4;
-}
-.black-key.correct { background: var(--consonance); }
-.black-key.correct::after {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  background: #a8d4b0;
-}
-.black-key.incorrect { background: var(--accent-ink); }
-.black-key.incorrect::after {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  background: var(--accent-soft);
-}
-
 /* ---------- Grand Staff — visually separated treble/bass ------------ */
 .grand-staff {
   display: flex;
@@ -559,10 +469,11 @@ kbd {
 .m-tab-glyph { font-family: var(--font-serif); font-size: 18px; line-height: 1; }
 .m-tab-label { font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
 .m-tab.active { color: var(--accent); }
-.m-root .kb-split { gap: 10px; margin-top: 6px; }
-.m-root .kb-split-row { gap: 8px; }
-.m-root .kb-clef-label { font-size: 18px; min-width: 48px; }
 .m-root .btn.btn-sm { padding: 8px 12px; font-size: 12px; }
+.m-root .chord-prompt { min-height: 0; padding: 8px 10px; gap: 4px; margin: 8px 0; }
+.m-root .chord-prompt-name { font-size: 30px; }
+.m-root .chord-prompt-done { font-size: 14px; }
+.m-root .check-badge { top: 6px; right: 8px; width: 22px; height: 22px; }
 
 /* ---------- Chord prompt ----------------------------------------------- */
 .chord-prompt {
@@ -618,26 +529,6 @@ kbd {
 @keyframes check-draw {
   from { stroke-dashoffset: 100; }
   to   { stroke-dashoffset: 0; }
-}
-
-/* ---------- Keyboard: selected (chord picker) -------------------------- */
-.white-key.selected {
-  background: var(--paper-2);
-  box-shadow: inset 0 0 0 1.5px var(--ink-2);
-}
-.black-key.selected {
-  background: var(--ink-2);
-  box-shadow: inset 0 0 0 1.5px var(--paper-3);
-}
-
-/* ---------- Keyboard: missing (post-Check feedback) -------------------- */
-.white-key.missing {
-  background: var(--paper-0);
-  box-shadow: inset 0 0 0 2px #c7a14a; /* amber outline */
-}
-.black-key.missing {
-  background: var(--ink-3);
-  box-shadow: inset 0 0 0 2px #c7a14a;
 }
 
 /* ---------- ChordStack (hint panel staff) ------------------------------ */
