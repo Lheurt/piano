@@ -395,7 +395,8 @@ function PannableKeyboard({
     if (autoCenterMode === 'prompt' && focusMidis.length > 0) {
       const visibleLo = Math.round(leftMidiRef.current);
       const visibleHi = visibleLo + visibleSemi;
-      if (focusMidis.every(m => m >= visibleLo && m <= visibleHi)) return;
+      const inBounds = visibleLo >= minLeft && visibleLo <= maxLeft;
+      if (inBounds && focusMidis.every(m => m >= visibleLo && m <= visibleHi)) return;
     }
     const target = autoCenterMode === 'prompt' && focusMidis.length > 0
       ? pkPickLeftEdge(focusMidis, lo, hi, visibleSemi, defaultLeftC)
