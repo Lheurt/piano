@@ -1,6 +1,13 @@
 /* pannable-keyboard.css — styles for the shared <PannableKeyboard>. */
 
-.pk { width: 100%; font-family: var(--font-sans); user-select: none; }
+.pk {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--font-sans);
+  user-select: none;
+}
 
 /* readout (full-map only) */
 .pk-readout {
