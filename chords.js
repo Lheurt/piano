@@ -274,6 +274,11 @@
 
   api.validateChord = validateChord;
 
+  function activeRangeForChords() {
+    return { loMidi: 36, hiMidi: 84 };
+  }
+  api.activeRangeForChords = activeRangeForChords;
+
   // Populate both environments.
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;

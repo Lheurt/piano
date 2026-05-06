@@ -207,3 +207,7 @@ test('validateChord: root-position chord has bassWrong=null', () => {
   const r = C.validateChord(new Set([60, 64, 67]), chord);
   assert.equal(r.bassWrong, null);
 });
+
+test('activeRangeForChords returns full C2–C6 range', () => {
+  assert.deepEqual(C.activeRangeForChords(), { loMidi: 36, hiMidi: 84 });
+});
