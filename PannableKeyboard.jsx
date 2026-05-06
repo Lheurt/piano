@@ -67,7 +67,7 @@ function pkPickLeftEdge(midis, lo, hi, visibleSemi, fallback) {
 // =====================================================================
 // PlayableRow — the keyboard surface itself, with drag-to-pan.
 // =====================================================================
-function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height = 180, blackHeight = 110 }) {
+function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height = 180, blackHeight = 110, activeRange = null }) {
   window.useNamingMode();
   // n octaves spans 7n+1 visible whites (both endpoint Cs counted).
   const visibleWhites = (visibleSemi / 12) * 7 + 1;
@@ -102,6 +102,24 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
     active: false, startedPan: false, startX: 0, startLeftC: leftC, pointerId: null, keyToFire: null,
   });
 
+  const [errorMidi, setErrorMidi] = React.useState(null);
+  const errorTimerRef = React.useRef(null);
+
+  React.useEffect(() => () => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+  }, []);
+
+  const triggerErrorPulse = (midi) => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setErrorMidi(midi);
+    errorTimerRef.current = setTimeout(() => setErrorMidi(null), 200);
+  };
+
+  const isInactive = (midi) => {
+    if (!activeRange) return false;
+    return midi < activeRange.loMidi || midi > activeRange.hiMidi;
+  };
+
   const handlePointerDown = (e, keyName) => {
     if (!onPan) {
       if (keyName) onKey && onKey(keyName);
@@ -132,7 +150,12 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
     const d = dragRef.current;
     if (!d.active) return;
     if (!d.startedPan && d.keyToFire) {
-      onKey && onKey(d.keyToFire);
+      const midi = window.nameToMidi(d.keyToFire);
+      if (isInactive(midi)) {
+        triggerErrorPulse(midi);
+      } else {
+        onKey && onKey(d.keyToFire);
+      }
     } else if (d.startedPan && onPan) {
       onPan(null); // settle
     }
@@ -162,8 +185,12 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
       >
         {whites.map((w, i) => {
           const state = highlighted[w.name];
+          const inactive = isInactive(w.midi);
+          const pulsing = errorMidi === w.midi;
           const cls = ['pk-white'];
-          if (state) cls.push('pk-' + state);
+          if (inactive) cls.push('pk-white-inactive');
+          if (state && !inactive) cls.push('pk-' + state);
+          if (pulsing) cls.push('pk-error-pulse');
           return (
             <div
               key={w.midi}
@@ -191,8 +218,12 @@ function PKRow({ leftC, lo, hi, visibleSemi, highlighted, onKey, onPan, height =
           const leftPx = (b.leftWhiteIndex + 1) * whiteW;
           const blackWidth = whiteW * 0.6;
           const state = highlighted[b.name];
+          const inactive = isInactive(b.midi);
+          const pulsing = errorMidi === b.midi;
           const cls = ['pk-black'];
-          if (state) cls.push('pk-' + state);
+          if (inactive) cls.push('pk-black-inactive');
+          if (state && !inactive) cls.push('pk-' + state);
+          if (pulsing) cls.push('pk-error-pulse');
           return (
             <div
               key={b.midi}
@@ -368,6 +399,7 @@ function PannableKeyboard({
   showReadout = true,
   keyHeight = 180,
   blackHeight = 110,
+  activeRange = null,
 }) {
   const minLeft = lo;
   const maxLeft = Math.max(lo, hi - visibleSemi);
@@ -446,6 +478,7 @@ function PannableKeyboard({
         scrubbing={scrubbing}
         animating={animating}
         variant={mapVariant}
+        activeRange={activeRange}
         onTeleport={(v) => {
           setAnimating(true);
           setLeftMidi(v);
@@ -467,6 +500,7 @@ function PannableKeyboard({
           onPan={onKeyboardPan}
           height={keyHeight}
           blackHeight={blackHeight}
+          activeRange={activeRange}
         />
       </div>
     </div>
