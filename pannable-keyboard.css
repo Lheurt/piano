@@ -105,3 +105,53 @@
 .pk-edge-left { left: 4px; }
 .pk-edge-right { right: 4px; }
 .pk-edge-arrow { font-family: var(--font-sans); font-weight: 600; }
+
+/* ---------- Inactive (greyed) regions ---------- */
+
+/* Inactive white keys: dimmed background, dimmed label, no hover lift. */
+.pk-white.pk-white-inactive {
+  background: var(--paper-2);
+  cursor: default;
+}
+.pk-white.pk-white-inactive:hover { background: var(--paper-2); }
+.pk-white.pk-white-inactive .pk-label { color: var(--fg-disabled); }
+
+/* Inactive black keys: desaturated, no hover lift. */
+.pk-black.pk-black-inactive {
+  background: var(--ink-3);
+  border-color: var(--ink-3);
+  cursor: default;
+}
+.pk-black.pk-black-inactive:hover { background: var(--ink-3); }
+
+/* Brief red flash when a greyed key is tapped. ~180ms then fades out. */
+@keyframes pk-error-pulse {
+  0%   { background: var(--dissonance-wash); }
+  60%  { background: var(--dissonance-wash); }
+  100% { background: var(--paper-2); }
+}
+@keyframes pk-error-pulse-black {
+  0%   { background: var(--accent-ink); }
+  60%  { background: var(--accent-ink); }
+  100% { background: var(--ink-3); }
+}
+.pk-white.pk-error-pulse { animation: pk-error-pulse 180ms var(--ease-out); }
+.pk-black.pk-error-pulse { animation: pk-error-pulse-black 180ms var(--ease-out); }
+
+/* Inactive minimap region: faint paper-2 fill across the inactive percentage
+   range. Sits behind ticks/dots/viewport. */
+.pk-mm-inactive {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--paper-2);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Inactive grand-staff band ---------- */
+
+/* Applied to the .staff-band element of the inactive clef. The SVG inside
+   inherits dimmed strokes via the descendant selector below. */
+.staff-band.staff-band-inactive { background: var(--paper-2); }
+.staff-band.staff-band-inactive svg .staff-line,
+.staff-band.staff-band-inactive svg .clef-glyph { stroke: var(--ink-4); fill: var(--ink-4); }
