@@ -36,7 +36,7 @@ function ledgersForY(y) {
   return out;
 }
 
-function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead }) {
+function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead, inactive = false }) {
   const lines = [20, 32, 44, 56, 68];
   const yFn = which === 'treble' ? trebleY : bassY;
   // Per-band margins: keep the default headroom unless this band's notes
@@ -53,17 +53,17 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
   const spacing = notes.length > 0 ? (endX - startX) / (notes.length + 0.5) : 60;
 
   return (
-    <div className={'staff-band ' + which}>
+    <div className={'staff-band ' + which + (inactive ? ' staff-band-inactive' : '')}>
       <svg viewBox={`0 ${viewTop} ${width} ${localHeight}`} width="100%" preserveAspectRatio="xMidYMid meet">
         {/* Staff lines */}
         <g stroke="#17161a" strokeWidth="1">
-          {lines.map((y, i) => <line key={i} x1="0" y1={y} x2={width} y2={y} />)}
+          {lines.map((y, i) => <line key={i} className="staff-line" x1="0" y1={y} x2={width} y2={y} />)}
         </g>
 
         {/* Clef glyph */}
         {which === 'treble'
-          ? <text x={narrow ? 2 : 8} y={70} fontFamily="Georgia, serif" fontSize={narrow ? 60 : 72} fill="#17161a">𝄞</text>
-          : <text x={narrow ? 6 : 12} y={56} fontFamily="Georgia, serif" fontSize={narrow ? 48 : 58} fill="#17161a">𝄢</text>}
+          ? <text className="clef-glyph" x={narrow ? 2 : 8} y={70} fontFamily="Georgia, serif" fontSize={narrow ? 60 : 72} fill="#17161a">𝄞</text>
+          : <text className="clef-glyph" x={narrow ? 6 : 12} y={56} fontFamily="Georgia, serif" fontSize={narrow ? 48 : 58} fill="#17161a">𝄢</text>}
 
         {/* Opening barline */}
         <line x1={startX - 14} y1={20} x2={startX - 14} y2={68} stroke="#17161a" strokeWidth="1" />
@@ -124,25 +124,35 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
 function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760, narrow = false, showPlayhead = true }) {
   const slotClef = (n) => {
     if (n.assignedClef) return n.assignedClef;
-    if (clef !== 'grand') return clef;        // single-clef: render on the visible band
+    if (clef !== 'grand') return clef;        // single-clef: render on the active band
     return clefForPitch(n.pitch);
   };
   const trebleSlots = notes.map((n, i) => slotClef(n) === 'treble' ? { n, globalIdx: i } : null);
   const bassSlots   = notes.map((n, i) => slotClef(n) === 'bass'   ? { n, globalIdx: i } : null);
 
-  const showTreble = clef === 'grand' || clef === 'treble';
-  const showBass   = clef === 'grand' || clef === 'bass';
   const effectiveWidth = narrow ? 340 : width;
 
   return (
     <div className={'grand-staff' + (narrow ? ' narrow' : '')}>
-      {showTreble && (
-        <StaffBand which="treble" notes={trebleSlots} playheadIndex={playheadIndex} width={effectiveWidth} narrow={narrow} showPlayhead={showPlayhead} />
-      )}
-      {showTreble && showBass && <div className="staff-gap" aria-hidden="true" />}
-      {showBass && (
-        <StaffBand which="bass" notes={bassSlots} playheadIndex={playheadIndex} width={effectiveWidth} narrow={narrow} showPlayhead={showPlayhead} />
-      )}
+      <StaffBand
+        which="treble"
+        notes={trebleSlots}
+        playheadIndex={playheadIndex}
+        width={effectiveWidth}
+        narrow={narrow}
+        showPlayhead={showPlayhead}
+        inactive={clef === 'bass'}
+      />
+      <div className="staff-gap" aria-hidden="true" />
+      <StaffBand
+        which="bass"
+        notes={bassSlots}
+        playheadIndex={playheadIndex}
+        width={effectiveWidth}
+        narrow={narrow}
+        showPlayhead={showPlayhead}
+        inactive={clef === 'treble'}
+      />
     </div>
   );
 }
