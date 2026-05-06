@@ -86,6 +86,7 @@ function ChordsView() {
     window.addEventListener('resize', onR);
     return () => window.removeEventListener('resize', onR);
   }, []);
+  const { visibleSemi, defaultLeftC } = window.useKeyboardLayout();
 
   const [tier, setTier] = React.useState(1);
   const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8));
@@ -373,8 +374,8 @@ function ChordsView() {
 
       <PannableKeyboard
         lo={36} hi={84}
-        defaultLeftC={narrow ? 60 : 36}
-        visibleSemi={narrow ? 12 : 48}
+        defaultLeftC={defaultLeftC}
+        visibleSemi={visibleSemi}
         highlighted={highlighted}
         focusMidis={[]}
         onKey={onKey}

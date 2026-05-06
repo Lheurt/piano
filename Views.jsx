@@ -83,9 +83,41 @@ function useNarrow() {
   return narrow;
 }
 
+// Pick visibleSemi (and a sensible defaultLeftC anchor) by aiming for a target
+// white-key width around 36 CSS pixels. The chrome estimate accounts for app
+// padding + the desktop sidebar (~280px above the 900px breakpoint, growing
+// linearly in the 600–1200 transition zone). Result: phones see ~1.25–1.7
+// octaves, tablets see 2–3, desktops see the full 4.
+function useKeyboardLayout() {
+  const compute = () => {
+    const w = window.innerWidth;
+    const chrome = w < 600 ? 24
+      : w < 1200 ? 24 + Math.round(((w - 600) / 600) * 320)
+      : 344;
+    const usable = Math.max(240, w - chrome);
+    const targetKey = 36;
+    let whites = usable / targetKey;
+    whites = Math.max(8, Math.min(29, whites));   // 1 octave .. full C2–C6 range
+    const visibleSemi = Math.round((whites - 1) * 12 / 7);
+    // Anchor the initial scroll on a nearby C — full range starts at C2,
+    // mid sizes at C3, narrow at C4.
+    const defaultLeftC = visibleSemi >= 48 ? 36 : visibleSemi >= 30 ? 48 : 60;
+    return { visibleSemi, defaultLeftC };
+  };
+  const [layout, setLayout] = React.useState(compute);
+  React.useEffect(() => {
+    const onR = () => setLayout(compute());
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+  return layout;
+}
+window.useKeyboardLayout = useKeyboardLayout;
+
 function PracticeView() {
   const t = window.t;
   const narrow = useNarrow();
+  const { visibleSemi, defaultLeftC } = useKeyboardLayout();
   const initialTierRef = React.useRef(null);
   if (initialTierRef.current === null) initialTierRef.current = loadPracticeTier();
   const initialTier = initialTierRef.current;
@@ -256,8 +288,8 @@ function PracticeView() {
       <PannableKeyboard
         lo={36}
         hi={84}
-        visibleSemi={narrow ? 12 : 48}
-        defaultLeftC={narrow ? 60 : 36}
+        visibleSemi={visibleSemi}
+        defaultLeftC={defaultLeftC}
         highlighted={highlighted}
         focusMidis={current ? [window.nameToMidi(current.pitch)].filter(m => m != null) : []}
         onKey={onKey}
