@@ -85,6 +85,8 @@ function PracticeView() {
   const [showHint, setShowHint] = React.useState(false);
   const [muted, setMuted] = React.useState(false);
 
+  const activeRange = window.activeRangeForPractice(clef, tier);
+
   React.useEffect(() => {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(PRACTICE_TIER_KEY, String(tier));
@@ -100,6 +102,11 @@ function PracticeView() {
 
   const onKey = (pitch, opts) => {
     const fromMic = opts && opts.fromMic;
+    const midi = window.pitchToMidi(pitch);
+    if (midi < activeRange.loMidi || midi > activeRange.hiMidi) {
+      // Greyed-octave input from any source — drop silently.
+      return;
+    }
     if (!fromMic) window.playNote(pitch);
     if (isDone || !current || current.status !== 'pending') return;
     setPlayed(pitch);
@@ -225,43 +232,18 @@ function PracticeView() {
         ) : null}
       </div>
 
-      {(() => {
-        // Tier-4 single-clef extends the kb range by one octave so every
-        // prompt in the crawled octave is clickable: treble down to C3,
-        // bass up to C5. Grand mode already covers C2–C6 across both clefs.
-        const tier4Single = tier === 4 && clef !== 'grand';
-        const kb =
-          clef === 'treble' ? { lo: tier4Single ? 48 : 60, hi: 84,
-                                visibleSemi: narrow ? 12 : (tier4Single ? 36 : 24),
-                                defaultLeftC: 60 } :
-          clef === 'bass'   ? { lo: 36, hi: tier4Single ? 72 : 60,
-                                visibleSemi: narrow ? 12 : (tier4Single ? 36 : 24),
-                                defaultLeftC: narrow ? 48 : 36 } :
-                              { lo: 36, hi: 84,
-                                visibleSemi: narrow ? 12 : 48,
-                                defaultLeftC: narrow ? 60 : 36 };
-        // On desktop, keep per-key width constant across clefs: grand shows 29
-        // whites across the full pane; single-clef tiers 1–3 show 15, tier 4
-        // shows 22. Constrain single-clef to its own white-key share of the
-        // pane and center it so keys match grand-mode width instead of stretching.
-        const singleWhites = tier4Single ? 22 : 15;
-        const constrain = !narrow && clef !== 'grand';
-        const wrapStyle = constrain
-          ? { maxWidth: `calc(100% * ${singleWhites} / 29)`, margin: '0 auto' }
-          : undefined;
-        return (
-          <div style={wrapStyle}>
-            <PannableKeyboard
-              {...kb}
-              highlighted={highlighted}
-              focusMidis={current ? [window.nameToMidi(current.pitch)].filter(m => m != null) : []}
-              onKey={onKey}
-              autoCenterMode="prompt"
-              mapVariant="full"
-            />
-          </div>
-        );
-      })()}
+      <PannableKeyboard
+        lo={36}
+        hi={84}
+        visibleSemi={narrow ? 12 : 48}
+        defaultLeftC={narrow ? 60 : 36}
+        highlighted={highlighted}
+        focusMidis={current ? [window.nameToMidi(current.pitch)].filter(m => m != null) : []}
+        onKey={onKey}
+        autoCenterMode="prompt"
+        mapVariant="full"
+        activeRange={activeRange}
+      />
 
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
