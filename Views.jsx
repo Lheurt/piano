@@ -261,7 +261,7 @@ function PracticeView() {
 
       {showTierInfo && <PracticeTierInfoPanel onClose={() => setShowTierInfo(false)} />}
 
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto' }}>
         <GrandStaff notes={notes} playheadIndex={playheadIdx} clef={clef} width={760} narrow={narrow} showPlayhead={showHint} wrongPitch={wrongPitch} />
         <button
           className={'hint-toggle' + (showHint ? ' on' : '')}
