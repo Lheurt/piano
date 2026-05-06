@@ -369,6 +369,7 @@ function ChordsView() {
         onKey={onKey}
         autoCenterMode="prompt"
         mapVariant="full"
+        activeRange={window.activeRangeForChords()}
       />
 
       <div className="practice-actions">
