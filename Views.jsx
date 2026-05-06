@@ -38,6 +38,19 @@ function loadPracticeTier() {
   return (n >= 1 && n <= 4) ? n : PRACTICE_DEFAULT_TIER;
 }
 
+const PRACTICE_SHOW_MISTAKES_KEY = 'fermata.practice.showMistakes';
+
+function loadShowMistakes() {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem(PRACTICE_SHOW_MISTAKES_KEY) === 'true';
+}
+
+function saveShowMistakes(v) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(PRACTICE_SHOW_MISTAKES_KEY, String(!!v));
+  }
+}
+
 function PracticeTierInfoPanel({ onClose }) {
   const t = window.t;
   return (
@@ -84,6 +97,9 @@ function PracticeView() {
   const [played, setPlayed] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
   const [muted, setMuted] = React.useState(false);
+  const showMistakesRef = React.useRef(null);
+  if (showMistakesRef.current === null) showMistakesRef.current = loadShowMistakes();
+  const showMistakes = showMistakesRef.current;
 
   const activeRange = window.activeRangeForPractice(clef, tier);
 
@@ -166,6 +182,11 @@ function PracticeView() {
     highlighted[played] = window.pitchToMidi(played) === window.pitchToMidi(current?.pitch) ? 'correct' : 'incorrect';
   }
 
+  const wrongPitch = (
+    showMistakes && played && current &&
+    window.pitchToMidi(played) !== window.pitchToMidi(current.pitch)
+  ) ? played : null;
+
   return (
     <div className="pane wide practice-pane">
       <div className="practice-hud">
@@ -211,7 +232,7 @@ function PracticeView() {
       {showTierInfo && <PracticeTierInfoPanel onClose={() => setShowTierInfo(false)} />}
 
       <div style={{ position: 'relative' }}>
-        <GrandStaff notes={notes} playheadIndex={playheadIdx} clef={clef} width={760} narrow={narrow} showPlayhead={showHint} />
+        <GrandStaff notes={notes} playheadIndex={playheadIdx} clef={clef} width={760} narrow={narrow} showPlayhead={showHint} wrongPitch={wrongPitch} />
         <button
           className={'hint-toggle' + (showHint ? ' on' : '')}
           onClick={() => setShowHint(h => !h)}
@@ -383,6 +404,12 @@ function SettingsView() {
   const locale = window.useLocale();
   const [showHints, setShowHints] = React.useState(true);
   const [strict, setStrict] = React.useState(false);
+  const [showMistakes, setShowMistakes] = React.useState(loadShowMistakes);
+  const toggleShowMistakes = () => {
+    const next = !showMistakes;
+    setShowMistakes(next);
+    saveShowMistakes(next);
+  };
 
   return (
     <div className="pane">
@@ -432,6 +459,11 @@ function SettingsView() {
           <div className="label">{t('settings.row.strict')}</div>
           <div className="help">{t('settings.row.strict.help')}</div>
           <div className="control"><div className={'toggle' + (strict ? ' on' : '')} onClick={() => setStrict(v => !v)} /></div>
+        </div>
+        <div className="setting-row">
+          <div className="label">{t('settings.row.show_mistakes')}</div>
+          <div className="help">{t('settings.row.show_mistakes.help')}</div>
+          <div className="control"><div className={'toggle' + (showMistakes ? ' on' : '')} onClick={toggleShowMistakes} /></div>
         </div>
         <div className="setting-row">
           <div className="label">{t('settings.row.timing')}</div>

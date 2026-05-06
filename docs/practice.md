@@ -8,6 +8,8 @@ Code: `Views.jsx` (`PracticeView`), `notes.js` (`makePassage`), `GrandStaff.jsx`
 
 A playhead marks the current note. Correct notes advance after ~180ms. Incorrect notes flash red and the user retries the same note (no skip). When all 8 are answered, the passage shows a summary and the user starts a new passage with **New**.
 
+When **Show mistakes on staff** is enabled in [Settings](settings.md), an incorrect note also draws a small red dot on the staff at the played pitch's position, vertically aligned with the prompt notehead. This makes the interval between target and played pitch visible while the red flash is active (~420ms). The dot routes to the band matching the played pitch's natural clef in grand mode, or onto the visible band (with ledger lines if needed) in single-clef mode.
+
 Input sources are interchangeable in the same passage:
 
 - **Click** the on-screen keyboard
