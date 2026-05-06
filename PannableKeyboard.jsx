@@ -285,7 +285,7 @@ function PKEdgeMarkers({ leftC, visibleSemi, highlighted }) {
 // =====================================================================
 // Minimap — full or mini variant.
 // =====================================================================
-function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onScrubStart, onScrubMove, onScrubEnd, scrubbing, animating, variant = 'full' }) {
+function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onScrubStart, onScrubMove, onScrubEnd, scrubbing, animating, variant = 'full', activeRange = null }) {
   window.useNamingMode();
   const minimapRef = React.useRef(null);
   const fullRange = hi - lo;
@@ -334,6 +334,20 @@ function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onS
 
   const wrapCls = 'pk-mm pk-mm-' + variant;
 
+  const inactiveSegments = [];
+  if (activeRange) {
+    if (activeRange.loMidi > lo) {
+      const leftPct = 0;
+      const widthPct = ((activeRange.loMidi - lo) / fullRange) * 100;
+      inactiveSegments.push({ leftPct, widthPct, key: 'left' });
+    }
+    if (activeRange.hiMidi < hi) {
+      const leftPct = ((activeRange.hiMidi - lo) / fullRange) * 100;
+      const widthPct = ((hi - activeRange.hiMidi) / fullRange) * 100;
+      inactiveSegments.push({ leftPct, widthPct, key: 'right' });
+    }
+  }
+
   return (
     <div
       className={wrapCls}
@@ -344,6 +358,13 @@ function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onS
         onTeleport && onTeleport(xToLeftMidi(e.touches[0].clientX));
       }}
     >
+      {inactiveSegments.map(seg => (
+        <div
+          key={seg.key}
+          className="pk-mm-inactive"
+          style={{ left: `${seg.leftPct}%`, width: `${seg.widthPct}%` }}
+        />
+      ))}
       {octaves.map(({ oct, m }) => {
         const pct = ((m - lo) / fullRange) * 100;
         return (
