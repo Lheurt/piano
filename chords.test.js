@@ -211,3 +211,49 @@ test('validateChord: root-position chord has bassWrong=null', () => {
 test('activeRangeForChords returns full C2–C6 range', () => {
   assert.deepEqual(C.activeRangeForChords(), { loMidi: 36, hiMidi: 84 });
 });
+
+test('makeChordPassage: tier 1 chords are rootPositionRequired', () => {
+  for (let trial = 0; trial < 20; trial++) {
+    const passage = C.makeChordPassage(1, 8);
+    for (const ch of passage) {
+      assert.equal(ch.rootPositionRequired, true,
+        `tier-1 chord ${ch.displayName} missing rootPositionRequired`);
+      assert.equal(ch.bass, null, 'tier-1 chord must not be a slash chord');
+    }
+  }
+});
+
+test('makeChordPassage: tiers 2+ are not rootPositionRequired', () => {
+  for (const tier of [2, 3, 4, 5, 6]) {
+    const passage = C.makeChordPassage(tier, 8);
+    for (const ch of passage) {
+      assert.notEqual(ch.rootPositionRequired, true,
+        `tier-${tier} chord ${ch.displayName} should not have rootPositionRequired`);
+    }
+  }
+});
+
+test('validateChord: rootPositionRequired enforces root in lowest note', () => {
+  const chord = C.buildChord('A', 'm'); // Am — pcs A(9), C(0), E(4)
+  chord.rootPositionRequired = true;
+  // A3(57) C4(60) E4(64) — A is lowest -> ok
+  const ok = C.validateChord(new Set([57, 60, 64]), chord);
+  assert.equal(ok.ok, true);
+  assert.equal(ok.bassWrong, false);
+  // C4(60) E4(64) A4(69) — C is lowest -> bass wrong (first inversion)
+  const inv1 = C.validateChord(new Set([60, 64, 69]), chord);
+  assert.equal(inv1.ok, false);
+  assert.equal(inv1.bassWrong, true);
+  // E4(64) A4(69) C5(72) — E is lowest -> bass wrong (second inversion)
+  const inv2 = C.validateChord(new Set([64, 69, 72]), chord);
+  assert.equal(inv2.ok, false);
+  assert.equal(inv2.bassWrong, true);
+});
+
+test('validateChord: rootPositionRequired without flag has no bass check', () => {
+  // Same Am chord without the flag — any voicing passes (current default).
+  const chord = C.buildChord('A', 'm');
+  const r = C.validateChord(new Set([60, 64, 69]), chord); // first inversion
+  assert.equal(r.ok, true);
+  assert.equal(r.bassWrong, null);
+});
