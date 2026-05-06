@@ -44,3 +44,7 @@ A wrong key in sequential mode (mic/MIDI) is rejected immediately. In click mode
 - **Check** — submits the selection (manual flow)
 - **New** — next passage
 - **Mute** — silences synth playback of user input
+
+## Layout
+
+The keyboard is always the same 4-octave (C2–C6) view used in [Practice](practice.md). Chord pools constrain root and quality but not range, so all four octaves are active in every tier — no greyed regions in this view.

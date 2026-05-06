@@ -48,11 +48,11 @@ The progression deliberately scales two axes: **range** (how far above and below
 
 Defined in `notes.js`. Within a tier and clef, the generator picks 8 notes uniformly at random from the pool, with one constraint: no two consecutive notes share the same MIDI number (no immediate repeats). When accidentals are in the pool, both enharmonic spellings of each black key are present, so the same sounding pitch may appear notated either as a sharp or a flat across draws.
 
-## Keyboard layout (responsive)
+## Layout (responsive)
 
-Per [project conventions](../README.md), the on-screen keyboard adapts at 900px:
+The Practice view always renders the full grand staff and a 4-octave keyboard (C2–C6), regardless of clef or tier. The current clef + tier defines an *active* region — the same pitch pool described under [Difficulty tiers](#difficulty-tiers). Octaves outside that region are greyed on the keyboard, on the orientation strip above it, and on the staff (the inactive clef's band is dimmed). Inside the active region every key is interactive.
 
-- **Desktop ≥900px** — single continuous keyboard. Grand mode shows 4 octaves (C2–C6); single-clef mode shows 2 octaves, centered.
-- **Mobile <900px** — the keyboard is pannable; one octave is visible at a time, defaulting to the clef's reading area.
+- **Desktop ≥900px** — the full 4-octave keyboard is visible at once.
+- **Mobile <900px** — the keyboard is pannable across all 4 octaves, one at a time.
 
-The on-screen keyboard's underlying range follows the tier: tiers 1–3 use the default 2-octave clef range, and tier 4 single-clef expands it by one octave (treble down to C3, bass up to C5) so every crawled prompt is clickable. The keyboard never shrinks below the default — only the prompt pool changes for tiers 1 and 2.
+Greyed keys produce no sound. Tapping a greyed key on the on-screen keyboard flashes it red briefly (no scoring impact, no advance). MIDI/mic input that maps to a greyed octave is dropped silently.
