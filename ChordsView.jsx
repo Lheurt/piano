@@ -278,15 +278,26 @@ function ChordsView() {
       highlighted[window.midiToName(rejected)] = 'incorrect';
     }
     if (showHint && !isDone && current) {
-      current.pitchClasses.forEach(pc => {
-        const midi = 60 + pc;
-        const name = window.midiToName(midi);
-        if (!highlighted[name]) highlighted[name] = 'active';
-      });
-      if (current.bass) {
-        const bassMidi = 48 + current.bassPitchClass;
-        const name = window.midiToName(bassMidi);
-        if (!highlighted[name]) highlighted[name] = 'active';
+      if (current.rootPositionRequired) {
+        // Stack the chord from the root so the lowest highlighted key is the
+        // root — matches the validation rule for tier 1.
+        const q = window.QUALITIES[current.quality];
+        const rootMidi = 60 + current.rootPitchClass;
+        q.intervals.forEach(semi => {
+          const name = window.midiToName(rootMidi + semi);
+          if (!highlighted[name]) highlighted[name] = 'active';
+        });
+      } else {
+        current.pitchClasses.forEach(pc => {
+          const midi = 60 + pc;
+          const name = window.midiToName(midi);
+          if (!highlighted[name]) highlighted[name] = 'active';
+        });
+        if (current.bass) {
+          const bassMidi = 48 + current.bassPitchClass;
+          const name = window.midiToName(bassMidi);
+          if (!highlighted[name]) highlighted[name] = 'active';
+        }
       }
     }
   } else if (!feedback.empty) {

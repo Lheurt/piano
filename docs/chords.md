@@ -17,7 +17,9 @@ A 6-tier difficulty selector in the HUD controls the chord pool. Tiers are **cum
 | 5 | *(no new qualities)* | all 12 | yes — ~⅓ of draws use slash voicings (e.g. `C/E`) |
 | 6 | 9, maj9, m9, 11, 13 | all 12 | yes |
 
-Definitions in `chords.js`: `TIER_NEW_QUALITIES`, `qualitiesForTier`, `rootPcsForTier`, `makeChordPassage`.
+**Tier 1 only**: chords must be played in **root position** — the lowest sounding note must be the root. The hint highlight stacks the chord from the root (e.g. `Am` → A4, C5, E5) so the canonical shape is visually unambiguous. Tiers 2–4 accept any voicing of the right pitch classes; tiers 5–6 require the named bass when a slash voicing is shown.
+
+Definitions in `chords.js`: `TIER_NEW_QUALITIES`, `qualitiesForTier`, `rootPcsForTier`, `makeChordPassage`. Tier-1 entries carry `rootPositionRequired = true`, which `validateChord` enforces against the lowest selected note.
 
 The chord tier currently does not persist across reloads (defaults to tier 1).
 

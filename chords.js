@@ -117,7 +117,9 @@
   }
 
   // Return `count` chord entries for a given tier. At tier >= 5, ~1/3 of draws
-  // are converted to a slash chord (bass = a non-root tone).
+  // are converted to a slash chord (bass = a non-root tone). Tier 1 chords
+  // require root position (lowest note must be the root), so users learn the
+  // canonical triad shape before any voicing freedom is granted.
   // No two consecutive entries are identical (by displayName).
   function makeChordPassage(tier, count) {
     count = count || 8;
@@ -140,6 +142,7 @@
         bassOffset = nonRoot[Math.floor(Math.random() * nonRoot.length)];
       }
       var chord = buildChord(pick.rootName, pick.qualitySymbol, bassOffset);
+      if (tier === 1) chord.rootPositionRequired = true;
       if (chord.displayName === lastName) continue;
       out.push(chord);
       lastName = chord.displayName;
@@ -236,10 +239,11 @@
       if (!selectedPcsCorrect.has(pc)) missingPcs.add(pc);
     });
     var bassWrong = null;
-    if (chord.bass) {
+    if (chord.bass || chord.rootPositionRequired) {
       var lowest = Math.min.apply(null, Array.from(selected));
       var lowestPc = ((lowest % 12) + 12) % 12;
-      bassWrong = lowestPc !== chord.bassPitchClass;
+      var requiredPc = chord.bass ? chord.bassPitchClass : chord.rootPitchClass;
+      bassWrong = lowestPc !== requiredPc;
     }
     var ok = selectedPcsExtra.size === 0 && missingPcs.size === 0 && bassWrong !== true;
     return {
