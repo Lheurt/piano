@@ -54,10 +54,10 @@ Defined in `notes.js`. Within a tier and clef, the generator picks 8 notes unifo
 
 The Practice view always renders the full grand staff and a 4-octave keyboard (C2–C6), regardless of clef or tier. The current clef + tier defines an *active* region — the same pitch pool described under [Difficulty tiers](#difficulty-tiers). Octaves outside that region are greyed on the keyboard, on the orientation strip above it, and on the staff (the inactive clef's band is dimmed). Inside the active region every key is interactive.
 
-The number of keys visible at once adapts to the viewport: white-key width targets ~36 CSS pixels, so wider screens show more of the keyboard at once and narrower screens show less. The keyboard is always pannable across the full C2–C6 range when the visible window is smaller than the active region.
+The number of keys visible at once adapts to the viewport. The 900px breakpoint matches the shell layout (bottom-tab bar below, sidebar above): below it the keys are ~40px wide (touch-friendlier), above it ~36px (the sidebar consumes ~280px, so the remaining space packs more keys in). The keyboard is always pannable across the full C2–C6 range when the visible window is smaller than the active region.
 
-- **Phones (~320–600px)** — roughly 1 to 1.7 octaves visible.
-- **Tablets / small laptops (~600–1100px)** — roughly 2 to 3 octaves visible.
-- **Desktop (~1400px and up)** — the full 4-octave keyboard is visible at once.
+- **Phones (~320–600px)** — roughly 1 to 1.5 octaves visible.
+- **Tablets and large phones (~600–899px)** — roughly 2 to 3 octaves visible.
+- **Desktop (≥900px)** — 2 to 4 octaves visible depending on viewport width; full 4 octaves above ~1400px.
 
 Greyed keys produce no sound. Tapping a greyed key on the on-screen keyboard flashes it red briefly (no scoring impact, no advance). MIDI/mic input that maps to a greyed octave is dropped silently.

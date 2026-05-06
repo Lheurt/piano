@@ -84,18 +84,16 @@ function useNarrow() {
 }
 
 // Pick visibleSemi (and a sensible defaultLeftC anchor) by aiming for a target
-// white-key width around 36 CSS pixels. The chrome estimate accounts for app
-// padding + the desktop sidebar (~280px above the 900px breakpoint, growing
-// linearly in the 600–1200 transition zone). Result: phones see ~1.25–1.7
-// octaves, tablets see 2–3, desktops see the full 4.
+// white-key width. The 900px breakpoint matches the shell layout transition
+// (bottom tab bar below, sidebar above): below it the keys are ~40px (touch-
+// friendlier), above it ~36px (sidebar takes ~280px so we pack more keys in).
 function useKeyboardLayout() {
   const compute = () => {
     const w = window.innerWidth;
-    const chrome = w < 600 ? 24
-      : w < 1200 ? 24 + Math.round(((w - 600) / 600) * 320)
-      : 344;
+    const isNarrow = w < 900;
+    const chrome = isNarrow ? 24 : 340;
     const usable = Math.max(240, w - chrome);
-    const targetKey = 36;
+    const targetKey = isNarrow ? 40 : 36;
     let whites = usable / targetKey;
     whites = Math.max(8, Math.min(29, whites));   // 1 octave .. full C2–C6 range
     const visibleSemi = Math.round((whites - 1) * 12 / 7);
