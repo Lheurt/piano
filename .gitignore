@@ -27,3 +27,6 @@ Thumbs.db
 
 # Superpowers working docs (specs, plans)
 docs/superpowers/
+
+# Superpowers brainstorming session files
+.superpowers/

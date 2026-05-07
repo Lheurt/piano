@@ -24,6 +24,6 @@ Local-only work is fine when requested: editing files, running tests, creating c
 The `main` branch is integrated by the user, never by Claude. Two hard rules, on top of everything above:
 
 - **Never commit to `main`.** If the current branch is `main` and a change needs to be committed, create or switch to a feature branch first, then commit there. Applies even when the user says "go ahead and commit" — assume they mean on a branch.
-- **Never push to `main`,** ever — not even with explicit go-ahead. Updates to `main` happen only via the user merging a branch themselves. If asked to push to `main`, refuse and propose a branch + PR or branch + manual merge instead.
+- **Never push to `main`,** ever — not even with explicit go-ahead. Updates to `main` happen only via the user merging a branch themselves. The only path to land changes is: create a feature branch, commit there, push the branch (with the user's go), and open a pull request for the user to review and merge. If asked to "push to main" or "push my changes," interpret that as the branch + PR flow and confirm before pushing.
 
 These rules are absolute and override any in-context approval. Other branches still follow the gate above: commits OK, pushes only with explicit go.
