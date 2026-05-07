@@ -38,6 +38,19 @@ function loadPracticeTier() {
   return (n >= 1 && n <= 4) ? n : PRACTICE_DEFAULT_TIER;
 }
 
+const PRACTICE_SHOW_MISTAKES_KEY = 'fermata.practice.showMistakes';
+
+function loadShowMistakes() {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem(PRACTICE_SHOW_MISTAKES_KEY) === 'true';
+}
+
+function saveShowMistakes(v) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(PRACTICE_SHOW_MISTAKES_KEY, String(!!v));
+  }
+}
+
 function PracticeTierInfoPanel({ onClose }) {
   const t = window.t;
   return (
@@ -70,9 +83,39 @@ function useNarrow() {
   return narrow;
 }
 
+// Pick visibleSemi (and a sensible defaultLeftC anchor) by aiming for a target
+// white-key width. The 900px breakpoint matches the shell layout transition
+// (bottom tab bar below, sidebar above): below it the keys are ~40px (touch-
+// friendlier), above it ~36px (sidebar takes ~280px so we pack more keys in).
+function useKeyboardLayout() {
+  const compute = () => {
+    const w = window.innerWidth;
+    const isNarrow = w < 900;
+    const chrome = isNarrow ? 24 : 340;
+    const usable = Math.max(240, w - chrome);
+    const targetKey = isNarrow ? 40 : 36;
+    let whites = usable / targetKey;
+    whites = Math.max(8, Math.min(29, whites));   // 1 octave .. full C2–C6 range
+    const visibleSemi = Math.round((whites - 1) * 12 / 7);
+    // Anchor the initial scroll on a nearby C — full range starts at C2,
+    // mid sizes at C3, narrow at C4.
+    const defaultLeftC = visibleSemi >= 48 ? 36 : visibleSemi >= 30 ? 48 : 60;
+    return { visibleSemi, defaultLeftC };
+  };
+  const [layout, setLayout] = React.useState(compute);
+  React.useEffect(() => {
+    const onR = () => setLayout(compute());
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+  return layout;
+}
+window.useKeyboardLayout = useKeyboardLayout;
+
 function PracticeView() {
   const t = window.t;
   const narrow = useNarrow();
+  const { visibleSemi, defaultLeftC } = useKeyboardLayout();
   const initialTierRef = React.useRef(null);
   if (initialTierRef.current === null) initialTierRef.current = loadPracticeTier();
   const initialTier = initialTierRef.current;
@@ -84,6 +127,11 @@ function PracticeView() {
   const [played, setPlayed] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
   const [muted, setMuted] = React.useState(false);
+  const showMistakesRef = React.useRef(null);
+  if (showMistakesRef.current === null) showMistakesRef.current = loadShowMistakes();
+  const showMistakes = showMistakesRef.current;
+
+  const activeRange = window.activeRangeForPractice(clef, tier);
 
   React.useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -100,6 +148,11 @@ function PracticeView() {
 
   const onKey = (pitch, opts) => {
     const fromMic = opts && opts.fromMic;
+    const midi = window.pitchToMidi(pitch);
+    if (midi < activeRange.loMidi || midi > activeRange.hiMidi) {
+      // Greyed-octave input from any source — drop silently.
+      return;
+    }
     if (!fromMic) window.playNote(pitch);
     if (isDone || !current || current.status !== 'pending') return;
     setPlayed(pitch);
@@ -159,6 +212,11 @@ function PracticeView() {
     highlighted[played] = window.pitchToMidi(played) === window.pitchToMidi(current?.pitch) ? 'correct' : 'incorrect';
   }
 
+  const wrongPitch = (
+    showMistakes && played && current &&
+    window.pitchToMidi(played) !== window.pitchToMidi(current.pitch)
+  ) ? played : null;
+
   return (
     <div className="pane wide practice-pane">
       <div className="practice-hud">
@@ -203,8 +261,8 @@ function PracticeView() {
 
       {showTierInfo && <PracticeTierInfoPanel onClose={() => setShowTierInfo(false)} />}
 
-      <div style={{ position: 'relative' }}>
-        <GrandStaff notes={notes} playheadIndex={playheadIdx} clef={clef} width={760} narrow={narrow} showPlayhead={showHint} />
+      <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto' }}>
+        <GrandStaff notes={notes} playheadIndex={playheadIdx} clef={clef} width={760} narrow={narrow} showPlayhead={showHint} wrongPitch={wrongPitch} />
         <button
           className={'hint-toggle' + (showHint ? ' on' : '')}
           onClick={() => setShowHint(h => !h)}
@@ -225,43 +283,18 @@ function PracticeView() {
         ) : null}
       </div>
 
-      {(() => {
-        // Tier-4 single-clef extends the kb range by one octave so every
-        // prompt in the crawled octave is clickable: treble down to C3,
-        // bass up to C5. Grand mode already covers C2–C6 across both clefs.
-        const tier4Single = tier === 4 && clef !== 'grand';
-        const kb =
-          clef === 'treble' ? { lo: tier4Single ? 48 : 60, hi: 84,
-                                visibleSemi: narrow ? 12 : (tier4Single ? 36 : 24),
-                                defaultLeftC: 60 } :
-          clef === 'bass'   ? { lo: 36, hi: tier4Single ? 72 : 60,
-                                visibleSemi: narrow ? 12 : (tier4Single ? 36 : 24),
-                                defaultLeftC: narrow ? 48 : 36 } :
-                              { lo: 36, hi: 84,
-                                visibleSemi: narrow ? 12 : 48,
-                                defaultLeftC: narrow ? 60 : 36 };
-        // On desktop, keep per-key width constant across clefs: grand shows 29
-        // whites across the full pane; single-clef tiers 1–3 show 15, tier 4
-        // shows 22. Constrain single-clef to its own white-key share of the
-        // pane and center it so keys match grand-mode width instead of stretching.
-        const singleWhites = tier4Single ? 22 : 15;
-        const constrain = !narrow && clef !== 'grand';
-        const wrapStyle = constrain
-          ? { maxWidth: `calc(100% * ${singleWhites} / 29)`, margin: '0 auto' }
-          : undefined;
-        return (
-          <div style={wrapStyle}>
-            <PannableKeyboard
-              {...kb}
-              highlighted={highlighted}
-              focusMidis={current ? [window.nameToMidi(current.pitch)].filter(m => m != null) : []}
-              onKey={onKey}
-              autoCenterMode="prompt"
-              mapVariant="full"
-            />
-          </div>
-        );
-      })()}
+      <PannableKeyboard
+        lo={36}
+        hi={84}
+        visibleSemi={visibleSemi}
+        defaultLeftC={defaultLeftC}
+        highlighted={highlighted}
+        focusMidis={current ? [window.nameToMidi(current.pitch)].filter(m => m != null) : []}
+        onKey={onKey}
+        autoCenterMode="prompt"
+        mapVariant="full"
+        activeRange={activeRange}
+      />
 
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
@@ -401,6 +434,12 @@ function SettingsView() {
   const locale = window.useLocale();
   const [showHints, setShowHints] = React.useState(true);
   const [strict, setStrict] = React.useState(false);
+  const [showMistakes, setShowMistakes] = React.useState(loadShowMistakes);
+  const toggleShowMistakes = () => {
+    const next = !showMistakes;
+    setShowMistakes(next);
+    saveShowMistakes(next);
+  };
 
   return (
     <div className="pane">
@@ -450,6 +489,11 @@ function SettingsView() {
           <div className="label">{t('settings.row.strict')}</div>
           <div className="help">{t('settings.row.strict.help')}</div>
           <div className="control"><div className={'toggle' + (strict ? ' on' : '')} onClick={() => setStrict(v => !v)} /></div>
+        </div>
+        <div className="setting-row">
+          <div className="label">{t('settings.row.show_mistakes')}</div>
+          <div className="help">{t('settings.row.show_mistakes.help')}</div>
+          <div className="control"><div className={'toggle' + (showMistakes ? ' on' : '')} onClick={toggleShowMistakes} /></div>
         </div>
         <div className="setting-row">
           <div className="label">{t('settings.row.timing')}</div>

@@ -188,3 +188,29 @@ test('single-clef tier 4 never attaches assignedClef', () => {
     }
   }
 });
+
+test('activeRangeForPractice — treble per tier', () => {
+  assert.deepEqual(N.activeRangeForPractice('treble', 1), { loMidi: 60, hiMidi: 72 });
+  assert.deepEqual(N.activeRangeForPractice('treble', 2), { loMidi: 60, hiMidi: 72 });
+  assert.deepEqual(N.activeRangeForPractice('treble', 3), { loMidi: 60, hiMidi: 84 });
+  assert.deepEqual(N.activeRangeForPractice('treble', 4), { loMidi: 48, hiMidi: 84 });
+});
+
+test('activeRangeForPractice — bass per tier', () => {
+  assert.deepEqual(N.activeRangeForPractice('bass', 1), { loMidi: 48, hiMidi: 60 });
+  assert.deepEqual(N.activeRangeForPractice('bass', 2), { loMidi: 48, hiMidi: 60 });
+  assert.deepEqual(N.activeRangeForPractice('bass', 3), { loMidi: 36, hiMidi: 60 });
+  assert.deepEqual(N.activeRangeForPractice('bass', 4), { loMidi: 36, hiMidi: 72 });
+});
+
+test('activeRangeForPractice — grand per tier', () => {
+  assert.deepEqual(N.activeRangeForPractice('grand', 1), { loMidi: 48, hiMidi: 72 });
+  assert.deepEqual(N.activeRangeForPractice('grand', 2), { loMidi: 48, hiMidi: 72 });
+  assert.deepEqual(N.activeRangeForPractice('grand', 3), { loMidi: 36, hiMidi: 84 });
+  assert.deepEqual(N.activeRangeForPractice('grand', 4), { loMidi: 36, hiMidi: 84 });
+});
+
+test('activeRangeForPractice — unknown clef/tier throws', () => {
+  assert.throws(() => N.activeRangeForPractice('alto', 1));
+  assert.throws(() => N.activeRangeForPractice('treble', 99));
+});

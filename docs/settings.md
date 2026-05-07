@@ -18,6 +18,7 @@ Code: `Views.jsx` (`SettingsView`), `i18n.js`, `naming.js`, `locales.js`.
 | Control | Wired? | Behavior |
 |---------|--------|----------|
 | **Strict** | no | Local state only. |
+| **Show mistakes on staff** | yes | When on, a wrong note in Practice draws a red dot on the staff at the played pitch's position, in the prompt's column. Persists to `localStorage` under `fermata.practice.showMistakes`. Default off. |
 | **Timing** (off / loose / strict) | no | Local state only. |
 
 ## Audio
@@ -29,4 +30,4 @@ Code: `Views.jsx` (`SettingsView`), `i18n.js`, `naming.js`, `locales.js`.
 
 ## Persistence
 
-Wired settings (language, note names) persist via stores defined in `i18n.js` and `naming.js`. Each store exposes `subscribe(fn)` for reactive updates and writes to `localStorage` on change. New settings should follow the same pattern.
+Wired settings (language, note names) persist via stores defined in `i18n.js` and `naming.js`. Each store exposes `subscribe(fn)` for reactive updates and writes to `localStorage` on change. The "Show mistakes on staff" toggle uses the simpler load-on-mount pattern (`loadShowMistakes`/`saveShowMistakes` in `Views.jsx`) since switching views remounts the consumer. New settings should follow whichever fits the consumer's lifetime.

@@ -86,6 +86,7 @@ function ChordsView() {
     window.addEventListener('resize', onR);
     return () => window.removeEventListener('resize', onR);
   }, []);
+  const { visibleSemi, defaultLeftC } = window.useKeyboardLayout();
 
   const [tier, setTier] = React.useState(1);
   const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8));
@@ -278,15 +279,26 @@ function ChordsView() {
       highlighted[window.midiToName(rejected)] = 'incorrect';
     }
     if (showHint && !isDone && current) {
-      current.pitchClasses.forEach(pc => {
-        const midi = 60 + pc;
-        const name = window.midiToName(midi);
-        if (!highlighted[name]) highlighted[name] = 'active';
-      });
-      if (current.bass) {
-        const bassMidi = 48 + current.bassPitchClass;
-        const name = window.midiToName(bassMidi);
-        if (!highlighted[name]) highlighted[name] = 'active';
+      if (current.rootPositionRequired) {
+        // Stack the chord from the root so the lowest highlighted key is the
+        // root — matches the validation rule for tier 1.
+        const q = window.QUALITIES[current.quality];
+        const rootMidi = 60 + current.rootPitchClass;
+        q.intervals.forEach(semi => {
+          const name = window.midiToName(rootMidi + semi);
+          if (!highlighted[name]) highlighted[name] = 'active';
+        });
+      } else {
+        current.pitchClasses.forEach(pc => {
+          const midi = 60 + pc;
+          const name = window.midiToName(midi);
+          if (!highlighted[name]) highlighted[name] = 'active';
+        });
+        if (current.bass) {
+          const bassMidi = 48 + current.bassPitchClass;
+          const name = window.midiToName(bassMidi);
+          if (!highlighted[name]) highlighted[name] = 'active';
+        }
       }
     }
   } else if (!feedback.empty) {
@@ -362,13 +374,14 @@ function ChordsView() {
 
       <PannableKeyboard
         lo={36} hi={84}
-        defaultLeftC={narrow ? 60 : 36}
-        visibleSemi={narrow ? 12 : 48}
+        defaultLeftC={defaultLeftC}
+        visibleSemi={visibleSemi}
         highlighted={highlighted}
         focusMidis={[]}
         onKey={onKey}
         autoCenterMode="prompt"
         mapVariant="full"
+        activeRange={window.activeRangeForChords()}
       />
 
       <div className="practice-actions">

@@ -54,6 +54,12 @@
     return pool;
   }
 
+  function activeRangeForPractice(clef, tier) {
+    var range = RANGES[clef] && RANGES[clef][tier];
+    if (!range) throw new Error('No range for clef=' + clef + ' tier=' + tier);
+    return { loMidi: range[0], hiMidi: range[1] };
+  }
+
   function makePassage(clef, count, tier) {
     count = count || 8;
     if (tier === undefined) tier = 3;
@@ -82,6 +88,7 @@
     makePassage: makePassage,
     pitchToMidi: pMidi,
     tierPool: tierPool,
+    activeRangeForPractice: activeRangeForPractice,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

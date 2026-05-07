@@ -36,15 +36,16 @@ function ledgersForY(y) {
   return out;
 }
 
-function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead }) {
+function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead, inactive = false, wrongPitch = null }) {
   const lines = [20, 32, 44, 56, 68];
   const yFn = which === 'treble' ? trebleY : bassY;
-  // Per-band margins: keep the default headroom unless this band's notes
-  // require more room (tier-4 ledger-line crawl: treble down to C3 at y=122,
-  // bass up to C5 at y=-34). Each band expands only in the direction it needs.
-  const noteYs = notes.filter(e => e !== null).map(e => yFn(e.n.pitch));
-  const minY = noteYs.length ? Math.min.apply(null, noteYs) : 0;
-  const maxY = noteYs.length ? Math.max.apply(null, noteYs) : 0;
+  // Per-band margins: keep the default headroom unless this band's notes (or
+  // the wrong-note marker) require more room. Each band expands only in the
+  // direction it needs.
+  const allYs = notes.filter(e => e !== null).map(e => yFn(e.n.pitch));
+  if (wrongPitch != null) allYs.push(yFn(wrongPitch));
+  const minY = allYs.length ? Math.min.apply(null, allYs) : 0;
+  const maxY = allYs.length ? Math.max.apply(null, allYs) : 0;
   const viewTop = Math.min(-16, minY - 12);
   const viewBottom = Math.max(112, maxY + 12);
   const localHeight = viewBottom - viewTop;
@@ -53,17 +54,17 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
   const spacing = notes.length > 0 ? (endX - startX) / (notes.length + 0.5) : 60;
 
   return (
-    <div className={'staff-band ' + which}>
+    <div className={'staff-band ' + which + (inactive ? ' staff-band-inactive' : '')}>
       <svg viewBox={`0 ${viewTop} ${width} ${localHeight}`} width="100%" preserveAspectRatio="xMidYMid meet">
         {/* Staff lines */}
         <g stroke="#17161a" strokeWidth="1">
-          {lines.map((y, i) => <line key={i} x1="0" y1={y} x2={width} y2={y} />)}
+          {lines.map((y, i) => <line key={i} className="staff-line" x1="0" y1={y} x2={width} y2={y} />)}
         </g>
 
         {/* Clef glyph */}
         {which === 'treble'
-          ? <text x={narrow ? 2 : 8} y={70} fontFamily="Georgia, serif" fontSize={narrow ? 60 : 72} fill="#17161a">𝄞</text>
-          : <text x={narrow ? 6 : 12} y={56} fontFamily="Georgia, serif" fontSize={narrow ? 48 : 58} fill="#17161a">𝄢</text>}
+          ? <text className="clef-glyph" x={narrow ? 2 : 8} y={70} fontFamily="Georgia, serif" fontSize={narrow ? 60 : 72} fill="#17161a">𝄞</text>
+          : <text className="clef-glyph" x={narrow ? 6 : 12} y={56} fontFamily="Georgia, serif" fontSize={narrow ? 48 : 58} fill="#17161a">𝄢</text>}
 
         {/* Opening barline */}
         <line x1={startX - 14} y1={20} x2={startX - 14} y2={68} stroke="#17161a" strokeWidth="1" />
@@ -116,33 +117,70 @@ function StaffBand({ which, notes, playheadIndex, width, narrow, showPlayhead })
             <line x1={endX - 2} y1={20} x2={endX - 2} y2={68} stroke="#17161a" strokeWidth="2" />
           </>
         )}
+
+        {/* Wrong-note marker — red dot at the played pitch's staff position,
+            aligned with the current prompt's column. Helps the user see the
+            interval between target and played. */}
+        {wrongPitch != null && (() => {
+          const x = startX + (playheadIndex + 0.5) * spacing;
+          const y = yFn(wrongPitch);
+          const ledgers = ledgersForY(y);
+          return (
+            <g>
+              {ledgers.map((ly, j) => (
+                <line key={j} x1={x - 11} y1={ly} x2={x + 11} y2={ly} stroke="#8a2d2d" strokeWidth="1" />
+              ))}
+              <circle cx={x} cy={y} r="4.5" fill="#8a2d2d" />
+            </g>
+          );
+        })()}
       </svg>
     </div>
   );
 }
 
-function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760, narrow = false, showPlayhead = true }) {
+function GrandStaff({ notes = [], playheadIndex = 0, clef = 'grand', width = 760, narrow = false, showPlayhead = true, wrongPitch = null }) {
   const slotClef = (n) => {
     if (n.assignedClef) return n.assignedClef;
-    if (clef !== 'grand') return clef;        // single-clef: render on the visible band
+    if (clef !== 'grand') return clef;        // single-clef: render on the active band
     return clefForPitch(n.pitch);
   };
   const trebleSlots = notes.map((n, i) => slotClef(n) === 'treble' ? { n, globalIdx: i } : null);
   const bassSlots   = notes.map((n, i) => slotClef(n) === 'bass'   ? { n, globalIdx: i } : null);
 
-  const showTreble = clef === 'grand' || clef === 'treble';
-  const showBass   = clef === 'grand' || clef === 'bass';
   const effectiveWidth = narrow ? 340 : width;
+
+  // Route the wrong-note marker the same way notes are routed: in single-clef
+  // mode it always lands on the visible band (with ledger lines if needed); in
+  // grand mode it lands on the band matching its natural clef.
+  const wrongClef = wrongPitch == null ? null
+    : (clef !== 'grand' ? clef : clefForPitch(wrongPitch));
+  const wrongInTreble = wrongClef === 'treble' ? wrongPitch : null;
+  const wrongInBass   = wrongClef === 'bass'   ? wrongPitch : null;
 
   return (
     <div className={'grand-staff' + (narrow ? ' narrow' : '')}>
-      {showTreble && (
-        <StaffBand which="treble" notes={trebleSlots} playheadIndex={playheadIndex} width={effectiveWidth} narrow={narrow} showPlayhead={showPlayhead} />
-      )}
-      {showTreble && showBass && <div className="staff-gap" aria-hidden="true" />}
-      {showBass && (
-        <StaffBand which="bass" notes={bassSlots} playheadIndex={playheadIndex} width={effectiveWidth} narrow={narrow} showPlayhead={showPlayhead} />
-      )}
+      <StaffBand
+        which="treble"
+        notes={trebleSlots}
+        playheadIndex={playheadIndex}
+        width={effectiveWidth}
+        narrow={narrow}
+        showPlayhead={showPlayhead}
+        inactive={clef === 'bass'}
+        wrongPitch={wrongInTreble}
+      />
+      <div className="staff-gap" aria-hidden="true" />
+      <StaffBand
+        which="bass"
+        notes={bassSlots}
+        playheadIndex={playheadIndex}
+        width={effectiveWidth}
+        narrow={narrow}
+        showPlayhead={showPlayhead}
+        inactive={clef === 'treble'}
+        wrongPitch={wrongInBass}
+      />
     </div>
   );
 }

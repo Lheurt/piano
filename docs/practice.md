@@ -8,6 +8,8 @@ Code: `Views.jsx` (`PracticeView`), `notes.js` (`makePassage`), `GrandStaff.jsx`
 
 A playhead marks the current note. Correct notes advance after ~180ms. Incorrect notes flash red and the user retries the same note (no skip). When all 8 are answered, the passage shows a summary and the user starts a new passage with **New**.
 
+When **Show mistakes on staff** is enabled in [Settings](settings.md), an incorrect note also draws a small red dot on the staff at the played pitch's position, vertically aligned with the prompt notehead. This makes the interval between target and played pitch visible while the red flash is active (~420ms). The dot routes to the band matching the played pitch's natural clef in grand mode, or onto the visible band (with ledger lines if needed) in single-clef mode.
+
 Input sources are interchangeable in the same passage:
 
 - **Click** the on-screen keyboard
@@ -48,11 +50,14 @@ The progression deliberately scales two axes: **range** (how far above and below
 
 Defined in `notes.js`. Within a tier and clef, the generator picks 8 notes uniformly at random from the pool, with one constraint: no two consecutive notes share the same MIDI number (no immediate repeats). When accidentals are in the pool, both enharmonic spellings of each black key are present, so the same sounding pitch may appear notated either as a sharp or a flat across draws.
 
-## Keyboard layout (responsive)
+## Layout (responsive)
 
-Per [project conventions](../README.md), the on-screen keyboard adapts at 900px:
+The Practice view always renders the full grand staff and a 4-octave keyboard (C2–C6), regardless of clef or tier. The current clef + tier defines an *active* region — the same pitch pool described under [Difficulty tiers](#difficulty-tiers). Octaves outside that region are greyed on the keyboard, on the orientation strip above it, and on the staff (the inactive clef's band is dimmed). Inside the active region every key is interactive.
 
-- **Desktop ≥900px** — single continuous keyboard. Grand mode shows 4 octaves (C2–C6); single-clef mode shows 2 octaves, centered.
-- **Mobile <900px** — the keyboard is pannable; one octave is visible at a time, defaulting to the clef's reading area.
+The grand staff caps at 760px wide and centers on large displays — beyond that the staff stretches into uncomfortable empty space. The keyboard caps at 1100px (roughly the natural width of 4 octaves at the target key size) and centers as well. Both adapt below their cap. The 900px breakpoint matches the shell layout (bottom-tab bar below, sidebar above): below it the keys are ~40px wide (touch-friendlier), above it ~36px (the sidebar consumes ~280px, so the remaining space packs more keys in). The keyboard is always pannable across the full C2–C6 range when the visible window is smaller than the active region.
 
-The on-screen keyboard's underlying range follows the tier: tiers 1–3 use the default 2-octave clef range, and tier 4 single-clef expands it by one octave (treble down to C3, bass up to C5) so every crawled prompt is clickable. The keyboard never shrinks below the default — only the prompt pool changes for tiers 1 and 2.
+- **Phones (~320–600px)** — roughly 1 to 1.5 octaves visible.
+- **Tablets and large phones (~600–899px)** — roughly 2 to 3 octaves visible.
+- **Desktop (≥900px)** — 2 to 4 octaves visible depending on viewport width; full 4 octaves above ~1400px.
+
+Greyed keys produce no sound. Tapping a greyed key on the on-screen keyboard flashes it red briefly (no scoring impact, no advance). MIDI/mic input that maps to a greyed octave is dropped silently.
