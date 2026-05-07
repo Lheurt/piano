@@ -93,6 +93,11 @@ function ChordsView() {
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [selected, setSelected] = React.useState(() => new Set());
   const [muted, setMuted] = React.useState(false);
+  const keepSelectedOnFailRef = React.useRef(null);
+  if (keepSelectedOnFailRef.current === null) {
+    keepSelectedOnFailRef.current = window.loadKeepSelectedOnFail();
+  }
+  const keepSelectedOnFail = keepSelectedOnFailRef.current;
   // When truthy, this is the latest validateChord() result; used to render feedback.
   const [feedback, setFeedback] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
@@ -175,12 +180,13 @@ function ChordsView() {
         ));
         setPlayheadIdx(i => Math.min(i + 1, chords.length));
         setShowHint(false);
+        setSelected(new Set());
       } else {
         setChords(prev => prev.map((c, i) =>
           i === playheadIdx ? { ...c, status: 'pending' } : c
         ));
+        if (!keepSelectedOnFail) setSelected(new Set());
       }
-      setSelected(new Set());
       setFeedback(null);
     }, 1200);
   };
@@ -252,12 +258,13 @@ function ChordsView() {
         ));
         setPlayheadIdx(i => Math.min(i + 1, chords.length));
         setShowHint(false);
+        setSelected(new Set());
       } else {
         setChords(prev => prev.map((c, i) =>
           i === playheadIdx ? { ...c, status: 'pending' } : c
         ));
+        if (!keepSelectedOnFail) setSelected(new Set());
       }
-      setSelected(new Set());
       setFeedback(null);
     }, 1200);
   };

@@ -51,6 +51,20 @@ function saveShowMistakes(v) {
   }
 }
 
+const CHORDS_KEEP_SELECTED_KEY = 'fermata.chords.keepSelectedOnFail';
+
+function loadKeepSelectedOnFail() {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem(CHORDS_KEEP_SELECTED_KEY) === 'true';
+}
+window.loadKeepSelectedOnFail = loadKeepSelectedOnFail;
+
+function saveKeepSelectedOnFail(v) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(CHORDS_KEEP_SELECTED_KEY, String(!!v));
+  }
+}
+
 function PracticeTierInfoPanel({ onClose }) {
   const t = window.t;
   return (
@@ -440,6 +454,12 @@ function SettingsView() {
     setShowMistakes(next);
     saveShowMistakes(next);
   };
+  const [keepSelectedOnFail, setKeepSelectedOnFail] = React.useState(loadKeepSelectedOnFail);
+  const toggleKeepSelectedOnFail = () => {
+    const next = !keepSelectedOnFail;
+    setKeepSelectedOnFail(next);
+    saveKeepSelectedOnFail(next);
+  };
 
   return (
     <div className="pane">
@@ -494,6 +514,11 @@ function SettingsView() {
           <div className="label">{t('settings.row.show_mistakes')}</div>
           <div className="help">{t('settings.row.show_mistakes.help')}</div>
           <div className="control"><div className={'toggle' + (showMistakes ? ' on' : '')} onClick={toggleShowMistakes} /></div>
+        </div>
+        <div className="setting-row">
+          <div className="label">{t('settings.row.keep_selected_on_fail')}</div>
+          <div className="help">{t('settings.row.keep_selected_on_fail.help')}</div>
+          <div className="control"><div className={'toggle' + (keepSelectedOnFail ? ' on' : '')} onClick={toggleKeepSelectedOnFail} /></div>
         </div>
         <div className="setting-row">
           <div className="label">{t('settings.row.timing')}</div>

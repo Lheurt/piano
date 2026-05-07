@@ -19,6 +19,7 @@ Code: `Views.jsx` (`SettingsView`), `i18n.js`, `naming.js`, `locales.js`.
 |---------|--------|----------|
 | **Strict** | no | Local state only. |
 | **Show mistakes on staff** | yes | When on, a wrong note in Practice draws a red dot on the staff at the played pitch's position, in the prompt's column. Persists to `localStorage` under `fermata.practice.showMistakes`. Default off. |
+| **Keep notes selected on wrong answer** | yes | When on, after submitting an incorrect chord in Chords the played notes stay selected so you can adjust and retry. The 1.2s wrong-answer flash still plays; only the post-flash reset is skipped. Persists to `localStorage` under `fermata.chords.keepSelectedOnFail`. Default off. |
 | **Timing** (off / loose / strict) | no | Local state only. |
 
 ## Audio
