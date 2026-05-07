@@ -352,9 +352,13 @@ function PKMinimap({ leftMidi, lo, hi, visibleSemi, highlighted, onTeleport, onS
     <div
       className={wrapCls}
       ref={minimapRef}
-      onMouseDown={(e) => { onTeleport && onTeleport(xToLeftMidi(e.clientX)); }}
+      onMouseDown={(e) => {
+        if (e.target.classList.contains('pk-mm-inactive')) return;
+        onTeleport && onTeleport(xToLeftMidi(e.clientX));
+      }}
       onTouchStart={(e) => {
         if (e.target.classList.contains('pk-mm-viewport')) return;
+        if (e.target.classList.contains('pk-mm-inactive')) return;
         onTeleport && onTeleport(xToLeftMidi(e.touches[0].clientX));
       }}
     >

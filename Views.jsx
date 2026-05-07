@@ -140,7 +140,7 @@ function PracticeView() {
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [played, setPlayed] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
-  const [muted, setMuted] = React.useState(false);
+  const muted = window.useMuted();
   const showMistakesRef = React.useRef(null);
   if (showMistakesRef.current === null) showMistakesRef.current = loadShowMistakes();
   const showMistakes = showMistakesRef.current;
@@ -312,7 +312,7 @@ function PracticeView() {
 
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
-          <div className={'toggle' + (muted ? ' on' : '')} onClick={() => { const v = !muted; setMuted(v); window.setMuted(v); }} />
+          <div className={'toggle' + (muted ? ' on' : '')} onClick={() => window.setMuted(!muted)} />
           {t('practice.action.mute')}
         </label>
         <div className="spacer" />
@@ -442,12 +442,11 @@ function MicSettings() {
 /* ---------- Settings ---------- */
 function SettingsView() {
   const t = window.t;
-  const [sound, setSound] = React.useState(true);
+  const sound = !window.useMuted();
   const namingMode = window.useNamingMode();
   const solfege = namingMode === 'solfege';
   const locale = window.useLocale();
   const [showHints, setShowHints] = React.useState(true);
-  const [strict, setStrict] = React.useState(false);
   const [showMistakes, setShowMistakes] = React.useState(loadShowMistakes);
   const toggleShowMistakes = () => {
     const next = !showMistakes;
@@ -506,11 +505,6 @@ function SettingsView() {
         <h3>{t('settings.section.evaluation')}</h3>
         <p>{t('settings.section.evaluation.sub')}</p>
         <div className="setting-row">
-          <div className="label">{t('settings.row.strict')}</div>
-          <div className="help">{t('settings.row.strict.help')}</div>
-          <div className="control"><div className={'toggle' + (strict ? ' on' : '')} onClick={() => setStrict(v => !v)} /></div>
-        </div>
-        <div className="setting-row">
           <div className="label">{t('settings.row.show_mistakes')}</div>
           <div className="help">{t('settings.row.show_mistakes.help')}</div>
           <div className="control"><div className={'toggle' + (showMistakes ? ' on' : '')} onClick={toggleShowMistakes} /></div>
@@ -520,17 +514,6 @@ function SettingsView() {
           <div className="help">{t('settings.row.keep_selected_on_fail.help')}</div>
           <div className="control"><div className={'toggle' + (keepSelectedOnFail ? ' on' : '')} onClick={toggleKeepSelectedOnFail} /></div>
         </div>
-        <div className="setting-row">
-          <div className="label">{t('settings.row.timing')}</div>
-          <div className="help">{t('settings.row.timing.help')}</div>
-          <div className="control">
-            <select defaultValue="off">
-              <option value="off">{t('settings.timing.off')}</option>
-              <option value="loose">{t('settings.timing.loose')}</option>
-              <option value="strict">{t('settings.timing.strict')}</option>
-            </select>
-          </div>
-        </div>
       </div>
 
       <div className="settings-section">
@@ -539,12 +522,7 @@ function SettingsView() {
         <div className="setting-row">
           <div className="label">{t('settings.row.sound')}</div>
           <div className="help">{t('settings.row.sound.help')}</div>
-          <div className="control"><div className={'toggle' + (sound ? ' on' : '')} onClick={() => setSound(v => !v)} /></div>
-        </div>
-        <div className="setting-row">
-          <div className="label">{t('settings.row.metronome')}</div>
-          <div className="help">{t('settings.row.metronome.help')}</div>
-          <div className="control"><input type="number" defaultValue={72} style={{ width: 100 }} /></div>
+          <div className="control"><div className={'toggle' + (sound ? ' on' : '')} onClick={() => window.setMuted(sound)} /></div>
         </div>
       </div>
     </div>

@@ -208,8 +208,16 @@ test('validateChord: root-position chord has bassWrong=null', () => {
   assert.equal(r.bassWrong, null);
 });
 
-test('activeRangeForChords returns full C2–C6 range', () => {
-  assert.deepEqual(C.activeRangeForChords(), { loMidi: 36, hiMidi: 84 });
+test('activeRangeForChords — tiers 1–4 are C4–C6', () => {
+  assert.deepEqual(C.activeRangeForChords(1), { loMidi: 60, hiMidi: 84 });
+  assert.deepEqual(C.activeRangeForChords(2), { loMidi: 60, hiMidi: 84 });
+  assert.deepEqual(C.activeRangeForChords(3), { loMidi: 60, hiMidi: 84 });
+  assert.deepEqual(C.activeRangeForChords(4), { loMidi: 60, hiMidi: 84 });
+});
+
+test('activeRangeForChords — tiers 5–6 widen to C3–C6 for inversions', () => {
+  assert.deepEqual(C.activeRangeForChords(5), { loMidi: 48, hiMidi: 84 });
+  assert.deepEqual(C.activeRangeForChords(6), { loMidi: 48, hiMidi: 84 });
 });
 
 test('makeChordPassage: tier 1 chords are rootPositionRequired', () => {

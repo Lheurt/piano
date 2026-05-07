@@ -278,8 +278,14 @@
 
   api.validateChord = validateChord;
 
-  function activeRangeForChords() {
-    return { loMidi: 36, hiMidi: 84 };
+  // Active region per tier. Tiers 1-4 don't use inversions and place their
+  // canonical voicings in octave 4-5, so a 2-octave window around middle C
+  // is enough. Tier 5 introduces inversions (slash bass at octave 3), which
+  // also covers tier 6's extended chords.
+  function activeRangeForChords(tier) {
+    if (tier === undefined) tier = 1;
+    if (tier <= 4) return { loMidi: 60, hiMidi: 84 }; // C4–C6
+    return { loMidi: 48, hiMidi: 84 };                // C3–C6
   }
   api.activeRangeForChords = activeRangeForChords;
 

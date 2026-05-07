@@ -51,4 +51,4 @@ When the **Keep notes selected on wrong answer** setting is on (off by default �
 
 ## Layout
 
-The keyboard is always the same 4-octave (C2–C6) view used in [Practice](practice.md). Chord pools constrain root and quality but not range, so all four octaves are active in every tier — no greyed regions in this view.
+The keyboard is always the same 4-octave (C2–C6) view used in [Practice](practice.md). The active region narrows by tier: tiers 1–4 are restricted to **C4–C6** (the canonical voicings live in octaves 4–5); tiers 5–6 widen to **C3–C6** to cover the slash-bass octave introduced with inversions. Octaves outside the active region are greyed on both the keyboard and the orientation strip — tapping a greyed key or strip region does nothing.
