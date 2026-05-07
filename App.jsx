@@ -23,6 +23,7 @@ function App() {
   const content =
     view === 'practice' ? <PracticeView /> :
     view === 'chords'   ? <ChordsView /> :
+    view === 'notename' ? <NoteNameView /> :
     view === 'devices'  ? <DevicesView  midiConnected={midiConnected} midiDeviceName={midiDeviceName} /> :
     view === 'help'     ? <HelpView /> :
                           <SettingsView />;
@@ -48,6 +49,7 @@ function App() {
           {[
             { id: 'practice', label: window.t('m_tab.practice'), glyph: '♪' },
             { id: 'chords',   label: window.t('m_tab.chords'),    glyph: '♩' },
+            { id: 'notename', label: window.t('m_tab.notename'),  glyph: '𝄞' },
             { id: 'devices',  label: window.t('m_tab.devices'),   glyph: '◌' },
             { id: 'settings', label: window.t('m_tab.settings'),  glyph: '⚙' },
             { id: 'help',     label: window.t('m_tab.help'),      glyph: '?' },
