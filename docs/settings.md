@@ -17,17 +17,14 @@ Code: `Views.jsx` (`SettingsView`), `i18n.js`, `naming.js`, `locales.js`.
 
 | Control | Wired? | Behavior |
 |---------|--------|----------|
-| **Strict** | no | Local state only. |
 | **Show mistakes on staff** | yes | When on, a wrong note in Practice draws a red dot on the staff at the played pitch's position, in the prompt's column. Persists to `localStorage` under `fermata.practice.showMistakes`. Default off. |
 | **Keep notes selected on wrong answer** | yes | When on, after submitting an incorrect chord in Chords the played notes stay selected so you can adjust and retry. The 1.2s wrong-answer flash still plays; only the post-flash reset is skipped. Persists to `localStorage` under `fermata.chords.keepSelectedOnFail`. Default off. |
-| **Timing** (off / loose / strict) | no | Local state only. |
 
 ## Audio
 
 | Control | Wired? | Behavior |
 |---------|--------|----------|
-| **Sound** | no | Local state only. (Per-view **Mute** toggles in Practice and Chords are the wired path; they call `window.setMuted`.) |
-| **Metronome BPM** | no | Local state only. |
+| **Sound on** | yes | Bound to the global mute (`window.setMuted` / `window.useMuted` in `audio.js`). Toggling it stays in sync with the per-view **Mute** toggles in Practice and Chords. Not persisted across reloads. |
 
 ## Persistence
 

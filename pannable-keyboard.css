@@ -28,7 +28,7 @@
 .pk-mm-full { height: 38px; margin-bottom: 22px; }
 .pk-mm-mini { height: 10px; margin-bottom: 6px; }
 
-.pk-mm-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--paper-3); }
+.pk-mm-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--paper-3); pointer-events: none; }
 .pk-mm-tick-label {
   position: absolute; bottom: -16px; transform: translateX(-50%);
   font-size: 9px; color: var(--fg-subtle); letter-spacing: 0.04em; pointer-events: none;
@@ -151,7 +151,7 @@
   position: absolute;
   top: 0; bottom: 0;
   background: var(--paper-2);
-  pointer-events: none;
+  cursor: default;
   z-index: 0;
 }
 

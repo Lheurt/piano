@@ -8,6 +8,7 @@
   let _ctx = null;
   let _midiCallback = null;
   let _muted = false;
+  const _muteListeners = new Set();
 
   // ─── AudioContext ──────────────────────────────────────────────────────────
 
@@ -152,9 +153,29 @@
       .catch(() => {/* MIDI permission denied — silent, virtual keyboard still works */});
   }
 
+  function setMuted(val) {
+    const v = !!val;
+    if (v === _muted) return;
+    _muted = v;
+    _muteListeners.forEach((fn) => fn(v));
+  }
+  function getMuted() { return _muted; }
+  function subscribeMuted(fn) {
+    _muteListeners.add(fn);
+    return () => _muteListeners.delete(fn);
+  }
+  function useMuted() {
+    const st = React.useState(_muted);
+    React.useEffect(() => subscribeMuted(st[1]), []);
+    return st[0];
+  }
+
   window.playNote             = playNote;
   window.midiToName           = midiToName;
-  window.setMuted             = (val) => { _muted = val; };
+  window.setMuted             = setMuted;
+  window.getMuted             = getMuted;
+  window.subscribeMuted       = subscribeMuted;
+  window.useMuted             = useMuted;
   window.initMIDI             = initMIDI;
   window.registerMidiCallback = registerMidiCallback;
 }());

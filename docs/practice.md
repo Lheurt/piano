@@ -60,4 +60,4 @@ The grand staff caps at 760px wide and centers on large displays — beyond that
 - **Tablets and large phones (~600–899px)** — roughly 2 to 3 octaves visible.
 - **Desktop (≥900px)** — 2 to 4 octaves visible depending on viewport width; full 4 octaves above ~1400px.
 
-Greyed keys produce no sound. Tapping a greyed key on the on-screen keyboard flashes it red briefly (no scoring impact, no advance). MIDI/mic input that maps to a greyed octave is dropped silently.
+Greyed keys produce no sound. Tapping a greyed key on the on-screen keyboard flashes it red briefly (no scoring impact, no advance). MIDI/mic input that maps to a greyed octave is dropped silently. Greyed regions on the orientation strip are inert too — tapping them does not pan the keyboard.

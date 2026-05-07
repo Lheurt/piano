@@ -92,7 +92,7 @@ function ChordsView() {
   const [chords, setChords] = React.useState(() => window.makeChordPassage(1, 8));
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [selected, setSelected] = React.useState(() => new Set());
-  const [muted, setMuted] = React.useState(false);
+  const muted = window.useMuted();
   const keepSelectedOnFailRef = React.useRef(null);
   if (keepSelectedOnFailRef.current === null) {
     keepSelectedOnFailRef.current = window.loadKeepSelectedOnFail();
@@ -409,12 +409,12 @@ function ChordsView() {
         onKey={onKey}
         autoCenterMode="prompt"
         mapVariant="full"
-        activeRange={window.activeRangeForChords()}
+        activeRange={window.activeRangeForChords(tier)}
       />
 
       <div className="practice-actions">
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--fg-muted)', userSelect: 'none' }}>
-          <div className={'toggle' + (muted ? ' on' : '')} onClick={() => { const v = !muted; setMuted(v); window.setMuted(v); }} />
+          <div className={'toggle' + (muted ? ' on' : '')} onClick={() => window.setMuted(!muted)} />
           {t('practice.action.mute')}
         </label>
         <div className="spacer" />
