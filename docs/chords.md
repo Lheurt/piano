@@ -33,6 +33,8 @@ The Chords view supports three input modes that drive the same validation:
 
 A wrong key in sequential mode (mic/MIDI) is rejected immediately. In click mode, the user composes their answer freely and submits with Check.
 
+When the **Keep notes selected on wrong answer** setting is on (off by default — see [Settings](settings.md)), an incorrect chord submission leaves the played notes selected after the wrong-answer flash so the user can adjust and retry without re-clicking each key.
+
 ## Validation
 
 `window.validateChord(selectedMidiSet, currentChord)` (in `chords.js`) compares pitch classes. For inversions (slash chords like `C/E`), the **lowest sounding note** must match the bass note named after the slash; the upper voices match the chord's pitch classes regardless of octave or order.

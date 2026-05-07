@@ -93,6 +93,11 @@ function ChordsView() {
   const [playheadIdx, setPlayheadIdx] = React.useState(0);
   const [selected, setSelected] = React.useState(() => new Set());
   const [muted, setMuted] = React.useState(false);
+  const keepSelectedOnFailRef = React.useRef(null);
+  if (keepSelectedOnFailRef.current === null) {
+    keepSelectedOnFailRef.current = window.loadKeepSelectedOnFail();
+  }
+  const keepSelectedOnFail = keepSelectedOnFailRef.current;
   // When truthy, this is the latest validateChord() result; used to render feedback.
   const [feedback, setFeedback] = React.useState(null);
   const [showHint, setShowHint] = React.useState(false);
@@ -175,12 +180,13 @@ function ChordsView() {
         ));
         setPlayheadIdx(i => Math.min(i + 1, chords.length));
         setShowHint(false);
+        setSelected(new Set());
       } else {
         setChords(prev => prev.map((c, i) =>
           i === playheadIdx ? { ...c, status: 'pending' } : c
         ));
+        if (!keepSelectedOnFail) setSelected(new Set());
       }
-      setSelected(new Set());
       setFeedback(null);
     }, 1200);
   };
@@ -252,12 +258,13 @@ function ChordsView() {
         ));
         setPlayheadIdx(i => Math.min(i + 1, chords.length));
         setShowHint(false);
+        setSelected(new Set());
       } else {
         setChords(prev => prev.map((c, i) =>
           i === playheadIdx ? { ...c, status: 'pending' } : c
         ));
+        if (!keepSelectedOnFail) setSelected(new Set());
       }
-      setSelected(new Set());
       setFeedback(null);
     }, 1200);
   };
@@ -302,19 +309,40 @@ function ChordsView() {
       }
     }
   } else if (!feedback.empty) {
+    // Replicate the canonical voicing of the target chord during feedback so
+    // the user always sees what the right answer looks like — root in the bass
+    // for non-slash chords, slash bass at octave 3 for inversions. Each
+    // canonical position is green if the user covered the pc, amber otherwise.
+    if (current.bass) {
+      const bassMidi = 48 + current.bassPitchClass;
+      const bassName = window.midiToName(bassMidi);
+      highlighted[bassName] = feedback.selectedPcsCorrect.has(current.bassPitchClass) ? 'correct' : 'missing';
+      current.pitchClasses.forEach(pc => {
+        if (pc === current.bassPitchClass) return;
+        const midi = 60 + pc;
+        const name = window.midiToName(midi);
+        if (!highlighted[name]) {
+          highlighted[name] = feedback.selectedPcsCorrect.has(pc) ? 'correct' : 'missing';
+        }
+      });
+    } else {
+      const q = window.QUALITIES[current.quality];
+      const rootMidi = 60 + current.rootPitchClass;
+      q.intervals.forEach(semi => {
+        const midi = rootMidi + semi;
+        const pc = ((midi % 12) + 12) % 12;
+        const name = window.midiToName(midi);
+        highlighted[name] = feedback.selectedPcsCorrect.has(pc) ? 'correct' : 'missing';
+      });
+    }
+    // Extra (out-of-chord) PCs the user played stay marked red at their actual
+    // MIDI so the user sees what to drop on the next try.
     selected.forEach(midi => {
       const pc = ((midi % 12) + 12) % 12;
-      const name = window.midiToName(midi);
-      if (feedback.selectedPcsCorrect.has(pc)) highlighted[name] = 'correct';
-      else highlighted[name] = 'incorrect';
-    });
-    // Missing tones: show on canonical voicing (C4..B4 octave for most tones,
-    // falling back to C3 octave only if above keyboard range).
-    feedback.missingPcs.forEach(pc => {
-      // Prefer octave 4 (midi 60..71) for missing PCs.
-      const midi = 60 + pc;
-      const name = window.midiToName(midi);
-      if (!highlighted[name]) highlighted[name] = 'missing';
+      if (feedback.selectedPcsExtra.has(pc)) {
+        const name = window.midiToName(midi);
+        if (!highlighted[name]) highlighted[name] = 'incorrect';
+      }
     });
   }
 
