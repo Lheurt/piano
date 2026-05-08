@@ -58,6 +58,7 @@ function SideNav({ view, setView }) {
     { group: t('nav.group.study'), entries: [
       { id: 'practice', label: t('nav.practice') },
       { id: 'chords',   label: t('nav.chords') },
+      { id: 'notename', label: t('nav.notename') },
     ]},
     { group: t('nav.group.setup'), entries: [
       { id: 'devices',  label: t('nav.devices') },

@@ -214,3 +214,67 @@ test('activeRangeForPractice — unknown clef/tier throws', () => {
   assert.throws(() => N.activeRangeForPractice('alto', 1));
   assert.throws(() => N.activeRangeForPractice('treble', 99));
 });
+
+test('noteFlashTierPool — tier 1 treble = E4..F5 naturals only', () => {
+  assert.deepEqual(N.noteFlashTierPool(1, 'treble'),
+    ['E4','F4','G4','A4','B4','C5','D5','E5','F5']);
+});
+
+test('noteFlashTierPool — tier 1 bass = G2..A3 naturals only', () => {
+  assert.deepEqual(N.noteFlashTierPool(1, 'bass'),
+    ['G2','A2','B2','C3','D3','E3','F3','G3','A3']);
+});
+
+test('noteFlashTierPool — tier 2 treble = C4..A5 naturals only', () => {
+  assert.deepEqual(N.noteFlashTierPool(2, 'treble'),
+    ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5']);
+});
+
+test('noteFlashTierPool — tier 3 treble = A3..C6 naturals', () => {
+  const pool = N.noteFlashTierPool(3, 'treble');
+  assert.equal(pool.length, 17);   // A3..C6 = 17 naturals
+  assert.equal(pool[0], 'A3');
+  assert.equal(pool[pool.length - 1], 'C6');
+});
+
+test('noteFlashTierPool — naturals only across all tiers and clefs', () => {
+  for (const clef of ['treble','bass']) {
+    for (const tier of [1, 2, 3]) {
+      for (const p of N.noteFlashTierPool(tier, clef)) {
+        assert.ok(!/[#b]/.test(p), `${clef} tier ${tier} should be naturals only, got ${p}`);
+      }
+    }
+  }
+});
+
+test('noteFlashTierPool — unknown tier or clef throws', () => {
+  assert.throws(() => N.noteFlashTierPool(0, 'treble'));
+  assert.throws(() => N.noteFlashTierPool(4, 'treble'));
+  assert.throws(() => N.noteFlashTierPool(1, 'grand'));
+});
+
+test('makeNoteFlash returns one prompt with letter, midi, displayPitch', () => {
+  const p = N.makeNoteFlash(1, 'treble');
+  assert.equal(typeof p.midi, 'number');
+  assert.equal(typeof p.displayPitch, 'string');
+  assert.ok(/^[A-G]$/.test(p.letter), `letter "${p.letter}" should be a single A-G`);
+});
+
+test('makeNoteFlash tier 1 stays in the staff body, naturals only', () => {
+  for (let trial = 0; trial < 50; trial++) {
+    const p = N.makeNoteFlash(1, 'treble');
+    assert.ok(p.midi >= 64 && p.midi <= 77, `treble tier 1 out of range: ${p.midi}`);
+    assert.ok(!/[#b]/.test(p.displayPitch), `treble tier 1 should not have accidentals`);
+  }
+  for (let trial = 0; trial < 50; trial++) {
+    const p = N.makeNoteFlash(1, 'bass');
+    assert.ok(p.midi >= 43 && p.midi <= 57, `bass tier 1 out of range: ${p.midi}`);
+  }
+});
+
+test('makeNoteFlash respects optional avoidMidi (no immediate repeat)', () => {
+  for (let trial = 0; trial < 50; trial++) {
+    const p = N.makeNoteFlash(2, 'treble', 64);  // avoid E4
+    assert.notEqual(p.midi, 64);
+  }
+});

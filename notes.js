@@ -40,6 +40,50 @@
     return [SHARP_NAMES[pc] + oct, FLAT_NAMES[pc] + oct];
   }
 
+  // Note-name drill ranges. Built from "ledger lines around the staff" rather
+  // than C-to-C octave anchors used by makePassage's RANGES.
+  //   Treble staff body = E4..F5 (MIDI 64..77).
+  //   Bass staff body   = G2..A3 (MIDI 43..57).
+  // Tier 1: staff body. Tier 2: +1 ledger. Tier 3: +2 ledgers. Naturals only.
+  var FLASH_RANGES = {
+    treble: { 1: [64, 77], 2: [60, 81], 3: [57, 84] },
+    bass:   { 1: [43, 57], 2: [40, 60], 3: [36, 64] },
+  };
+
+  function noteFlashTierPool(tier, clef) {
+    var range = FLASH_RANGES[clef] && FLASH_RANGES[clef][tier];
+    if (!range) throw new Error('No flash range for clef=' + clef + ' tier=' + tier);
+    var pool = [];
+    for (var m = range[0]; m <= range[1]; m++) {
+      if (BLACK_PCS[midiPc(m)]) continue;
+      pool.push(SHARP_NAMES[midiPc(m)] + midiOctave(m));
+    }
+    return pool;
+  }
+
+  function makeNoteFlash(tier, clef, avoidMidi) {
+    var range = FLASH_RANGES[clef] && FLASH_RANGES[clef][tier];
+    if (!range) throw new Error('No flash range for clef=' + clef + ' tier=' + tier);
+
+    var midis = [];
+    for (var m = range[0]; m <= range[1]; m++) {
+      if (BLACK_PCS[midiPc(m)]) continue;
+      if (m !== avoidMidi) midis.push(m);
+    }
+    // Defensive: if avoidMidi exhausted the pool, fall back to the unfiltered pool.
+    if (midis.length === 0) {
+      for (var m2 = range[0]; m2 <= range[1]; m2++) {
+        if (BLACK_PCS[midiPc(m2)]) continue;
+        midis.push(m2);
+      }
+    }
+
+    var midi = midis[Math.floor(Math.random() * midis.length)];
+    var pc = midiPc(midi);
+    var name = SHARP_NAMES[pc] + midiOctave(midi);
+    return { midi: midi, displayPitch: name, letter: SHARP_NAMES[pc] };
+  }
+
   function tierPool(clef, tier) {
     var range = RANGES[clef] && RANGES[clef][tier];
     if (!range) throw new Error('No range for clef=' + clef + ' tier=' + tier);
@@ -89,6 +133,8 @@
     pitchToMidi: pMidi,
     tierPool: tierPool,
     activeRangeForPractice: activeRangeForPractice,
+    noteFlashTierPool: noteFlashTierPool,
+    makeNoteFlash: makeNoteFlash,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

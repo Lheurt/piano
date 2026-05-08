@@ -6,6 +6,7 @@ Fermata is a piano sight-reading and chord-recognition trainer. These docs descr
 
 - [Practice](practice.md) — sight-reading drill (read a note from the staff, play it on the keyboard)
 - [Chords](chords.md) — chord-recognition drill (read a chord symbol, play the notes)
+- [Note name](notename.md) — flashcard drill (read a note on a staff, tap the matching letter)
 - [Devices](devices.md) — MIDI keyboard and microphone input
 - [Settings](settings.md) — language, note naming, evaluation, audio
 

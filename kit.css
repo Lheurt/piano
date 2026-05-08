@@ -464,7 +464,7 @@ kbd {
 .m-brand-glyph { font-family: var(--font-serif); font-size: 22px; color: var(--accent); line-height: 1; }
 .m-brand-name { font-family: var(--font-serif); font-size: 15px; font-weight: 500; letter-spacing: 0.01em; }
 .m-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.m-tabbar { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--paper-1); border-top: 1px solid var(--paper-3); gap: 4px; }
+.m-tabbar { flex-shrink: 0; display: grid; grid-template-columns: repeat(6, 1fr); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--paper-1); border-top: 1px solid var(--paper-3); gap: 4px; }
 .m-tab { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--fg-subtle); font-family: var(--font-sans); }
 .m-tab-glyph { font-family: var(--font-serif); font-size: 18px; line-height: 1; }
 .m-tab-label { font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -860,3 +860,55 @@ kbd {
 }
 .mic-btn-icon { font-family: var(--font-mono); }
 .legend-swatch.swatch-missing::after { content: none; }
+
+/* ---- Note name view ---- */
+
+.notename-pane .notename-prompt {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0 32px;
+}
+.notename-prompt svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.note-answer-bar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin: 8px auto 16px;
+  max-width: 720px;
+  width: 100%;
+}
+
+.note-answer-btn {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 18px 0;
+  border-radius: 4px;
+  background: var(--paper-1);
+  color: var(--ink-0);
+  border: 1px solid var(--paper-3);
+  cursor: pointer;
+  transition: background-color 120ms, color 120ms, border-color 120ms, transform 80ms;
+  user-select: none;
+}
+.note-answer-btn:hover { background: var(--paper-2); }
+.note-answer-btn:active { transform: translateY(1px); }
+.note-answer-btn.flash-right {
+  background: var(--consonance-wash);
+  color: var(--consonance);
+  border-color: var(--consonance);
+}
+.note-answer-btn.flash-wrong {
+  background: var(--dissonance-wash);
+  color: var(--dissonance);
+  border-color: var(--dissonance);
+}
+
+@media (max-width: 480px) {
+  .note-answer-btn { font-size: 15px; padding: 14px 0; }
+  .note-answer-bar { gap: 5px; }
+}
