@@ -39,7 +39,7 @@ Treble (𝄞) or bass (𝄢) toggle in the HUD, independent of tier. The active 
 Seven letter buttons at the bottom, in C-D-E-F-G-A-B order — matches the Do-Re-Mi sequence in solfège mode. The buttons display:
 
 - **English mode:** `C  D  E  F  G  A  B`
-- **Solfège mode:** `Do  Re  Mi  Fa  Sol  La  Si`
+- **Solfège mode:** `Do  Ré  Mi  Fa  Sol  La  Si`
 
 Names track the global note-naming setting in [Settings](settings.md), so the bar updates live when the user toggles English ↔ Solfège.
 
