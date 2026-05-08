@@ -103,8 +103,6 @@
     'notename.tier.2.body':       'Adds one ledger line above and below the staff. Still naturals only.',
     'notename.tier.3.title':      'Tier 3 — two ledger lines',
     'notename.tier.3.body':       'Adds a second ledger line on each side. Naturals only.',
-    'notename.tier.4.title':      'Tier 4 — accidentals on',
-    'notename.tier.4.body':       'Same range as tier 3, with sharps and flats. Both spellings of each black key appear (F♯ and G♭).',
     'notename.action.reset':      'Reset stats',
 
     // ---- Chords view
@@ -382,8 +380,6 @@
     'notename.tier.2.body':       'Ajoute une ligne supplémentaire au-dessus et en dessous. Toujours naturelles.',
     'notename.tier.3.title':      'Niveau 3 — deux lignes supplémentaires',
     'notename.tier.3.body':       'Ajoute une seconde ligne supplémentaire de chaque côté. Naturelles seulement.',
-    'notename.tier.4.title':      'Niveau 4 — altérations',
-    'notename.tier.4.body':       'Même amplitude qu’au niveau 3, avec dièses et bémols. Les deux écritures de chaque touche noire apparaissent (Fa♯ et Sol♭).',
     'notename.action.reset':      'Réinitialiser',
 
     'chords.hud.title':           'Accords · Niveau {tier}',

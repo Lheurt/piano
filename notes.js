@@ -44,22 +44,19 @@
   // than C-to-C octave anchors used by makePassage's RANGES.
   //   Treble staff body = E4..F5 (MIDI 64..77).
   //   Bass staff body   = G2..A3 (MIDI 43..57).
-  // Tier 1: staff body. Tier 2: +1 ledger. Tier 3/4: +2 ledgers. Tier 4: +accidentals.
+  // Tier 1: staff body. Tier 2: +1 ledger. Tier 3: +2 ledgers. Naturals only.
   var FLASH_RANGES = {
-    treble: { 1: [64, 77], 2: [60, 81], 3: [57, 84], 4: [57, 84] },
-    bass:   { 1: [43, 57], 2: [40, 60], 3: [36, 64], 4: [36, 64] },
+    treble: { 1: [64, 77], 2: [60, 81], 3: [57, 84] },
+    bass:   { 1: [43, 57], 2: [40, 60], 3: [36, 64] },
   };
 
   function noteFlashTierPool(tier, clef) {
     var range = FLASH_RANGES[clef] && FLASH_RANGES[clef][tier];
     if (!range) throw new Error('No flash range for clef=' + clef + ' tier=' + tier);
-    var includeAccidentals = tier === 4;
     var pool = [];
     for (var m = range[0]; m <= range[1]; m++) {
-      var isBlack = !!BLACK_PCS[midiPc(m)];
-      if (isBlack && !includeAccidentals) continue;
-      var names = namesForMidi(m);
-      for (var i = 0; i < names.length; i++) pool.push(names[i]);
+      if (BLACK_PCS[midiPc(m)]) continue;
+      pool.push(SHARP_NAMES[midiPc(m)] + midiOctave(m));
     }
     return pool;
   }
@@ -67,43 +64,24 @@
   function makeNoteFlash(tier, clef, avoidMidi) {
     var range = FLASH_RANGES[clef] && FLASH_RANGES[clef][tier];
     if (!range) throw new Error('No flash range for clef=' + clef + ' tier=' + tier);
-    var includeAccidentals = tier === 4;
 
-    // Build a pool of MIDI values weighted to natural pcs unless accidentals on.
     var midis = [];
     for (var m = range[0]; m <= range[1]; m++) {
-      var isBlack = !!BLACK_PCS[midiPc(m)];
-      if (isBlack && !includeAccidentals) continue;
+      if (BLACK_PCS[midiPc(m)]) continue;
       if (m !== avoidMidi) midis.push(m);
     }
-    // Defensive: if avoidMidi exhausted the pool (single-note tier corners),
-    // fall back to the unfiltered pool.
+    // Defensive: if avoidMidi exhausted the pool, fall back to the unfiltered pool.
     if (midis.length === 0) {
       for (var m2 = range[0]; m2 <= range[1]; m2++) {
-        var isBlack2 = !!BLACK_PCS[midiPc(m2)];
-        if (isBlack2 && !includeAccidentals) continue;
+        if (BLACK_PCS[midiPc(m2)]) continue;
         midis.push(m2);
       }
     }
 
     var midi = midis[Math.floor(Math.random() * midis.length)];
     var pc = midiPc(midi);
-    var oct = midiOctave(midi);
-
-    if (!BLACK_PCS[pc]) {
-      var name = SHARP_NAMES[pc] + oct;   // e.g., "E4"
-      return { midi: midi, displayPitch: name, letter: SHARP_NAMES[pc], accidental: null };
-    }
-
-    // Black key with accidentals on: pick sharp or flat spelling 50/50.
-    var asSharp = Math.random() < 0.5;
-    if (asSharp) {
-      var sharpName = SHARP_NAMES[pc] + oct;        // e.g., "F#4"
-      return { midi: midi, displayPitch: sharpName, letter: sharpName.charAt(0), accidental: '#' };
-    } else {
-      var flatName = FLAT_NAMES[pc] + oct;          // e.g., "Gb4"
-      return { midi: midi, displayPitch: flatName, letter: flatName.charAt(0), accidental: 'b' };
-    }
+    var name = SHARP_NAMES[pc] + midiOctave(midi);
+    return { midi: midi, displayPitch: name, letter: SHARP_NAMES[pc] };
   }
 
   function tierPool(clef, tier) {

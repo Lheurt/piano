@@ -1,13 +1,13 @@
 // NoteFlash.jsx — single-note prompt staff for the Note name view.
-// Shows one large notehead on a treble OR bass staff, with optional accidental
-// and ledger lines for notes outside the 5 staff lines.
+// One large natural notehead on a treble OR bass staff, with ledger lines
+// for notes outside the 5 staff lines.
 //
 // Treble staff lines (top→bottom): F5, D5, B4, G4, E4. Step coords from C4.
 // Bass   staff lines (top→bottom): A3, F3, D3, B2, G2.
 //
 // Reuses window.stepsFromC4 from GrandStaff.jsx.
 
-function NoteFlash({ pitch, accidental, clef }) {
+function NoteFlash({ pitch, clef }) {
   const width = 240;
   const height = 240;
 
@@ -48,7 +48,6 @@ function NoteFlash({ pitch, accidental, clef }) {
   }
   const ledgers = ledgersForY(noteheadY);
 
-  const accGlyph = accidental === '#' ? '♯' : accidental === 'b' ? '♭' : null;
   const clefGlyph = clef === 'treble' ? '𝄞' : '𝄢';
   // Treble clef glyph anchors around its tail (G4 line, y=156); the unicode
   // glyph baseline sits below the curl, so place baseline a touch below the
@@ -73,10 +72,6 @@ function NoteFlash({ pitch, accidental, clef }) {
           <line key={i} x1={centerX - 22} y1={ly} x2={centerX + 22} y2={ly}
                 stroke="#17161a" strokeWidth="1.2" />
         ))}
-        {accGlyph && (
-          <text x={centerX - 36} y={noteheadY + 9}
-                fontFamily="Georgia, serif" fontSize="34" fill="#17161a">{accGlyph}</text>
-        )}
         <ellipse cx={centerX} cy={noteheadY} rx="13" ry="9.5"
                  fill="#17161a" transform={`rotate(-20 ${centerX} ${noteheadY})`} />
       </svg>

@@ -1,5 +1,5 @@
 // NoteNameView.jsx — staff → letter flashcard drill.
-//   Prompt: NoteFlash (single notehead on staff, optional accidental).
+//   Prompt: NoteFlash (single notehead on staff).
 //   Answer bar: 7 letter buttons C..B. Tap matches by letter alone.
 //   Wrong tap: red flash, prompt stays. Right tap: green flash, advance.
 //   Stats: first-try correct over completed prompts. No persistence.
@@ -10,7 +10,7 @@ const NOTENAME_CLEF_KEY = 'fermata.notename.clef';
 function loadNotenameTier() {
   if (typeof localStorage === 'undefined') return 1;
   const v = parseInt(localStorage.getItem(NOTENAME_TIER_KEY), 10);
-  return (v >= 1 && v <= 4) ? v : 1;
+  return (v >= 1 && v <= 3) ? v : 1;
 }
 function saveNotenameTier(v) {
   if (typeof localStorage !== 'undefined') localStorage.setItem(NOTENAME_TIER_KEY, String(v));
@@ -34,7 +34,7 @@ function NoteNameTierInfoPanel({ onClose }) {
       <button className="tier-info-close" onClick={onClose} aria-label={t('notename.tier_info.close')}>×</button>
       <div className="tier-info-head">{t('notename.tier_info.title')}</div>
       <div className="tier-info-body">
-        {[1, 2, 3, 4].map(n => (
+        {[1, 2, 3].map(n => (
           <div className="tier-info-row" key={n}>
             <span className="tier-info-num">{n}</span>
             <div className="tier-info-text">
@@ -123,7 +123,7 @@ function NoteNameView() {
             title={t('notename.tier_about')}
           >?</button>
           <div className="clef-toggle">
-            {[1, 2, 3, 4].map(n => (
+            {[1, 2, 3].map(n => (
               <button key={n}
                 className={'clef-btn' + (tier === n ? ' active' : '')}
                 onClick={() => changeTier(n)}>
@@ -142,9 +142,7 @@ function NoteNameView() {
 
       {showTierInfo && <NoteNameTierInfoPanel onClose={() => setShowTierInfo(false)} />}
 
-      <NoteFlash pitch={current.displayPitch}
-                 accidental={current.accidental}
-                 clef={clef} />
+      <NoteFlash pitch={current.displayPitch} clef={clef} />
 
       <div className="note-answer-bar">
         {LETTERS_C_TO_B.map(L => {

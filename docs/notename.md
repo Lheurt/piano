@@ -1,6 +1,6 @@
 # Note name — flashcard
 
-The Note name view shows one note on a staff and asks the user to tap the matching letter on a button bar at the bottom. Octave is irrelevant — every C is a "C." If accidentals are on, the user reads through the ♯/♭ and taps the underlying letter.
+The Note name view shows one note on a staff and asks the user to tap the matching letter on a button bar at the bottom. Octave is irrelevant — every C is a "C." Naturals only; the drill trains the staff line/space → letter mapping in isolation.
 
 Code: `NoteNameView.jsx`, `NoteFlash.jsx` (single-note staff renderer), `notes.js` (`makeNoteFlash`, `noteFlashTierPool`).
 
@@ -17,16 +17,13 @@ The **Reset stats** button zeros both counters. Stats do not persist across relo
 
 ## Tiers
 
-Four cumulative difficulty tiers. The `?` button opens a panel describing each.
+Three cumulative difficulty tiers. The `?` button opens a panel describing each.
 
-| Tier | Range above/below staff | Accidentals |
-|------|-------------------------|-------------|
-| 1 | Staff body only (5 lines + 4 spaces) | no |
-| 2 | + 1 ledger line above and below | no |
-| 3 | + 2 ledger lines above and below (full envelope) | no |
-| 4 | Full envelope, accidentals on | yes |
-
-Tier 4 draws both ♯ and ♭ spellings of each black key across draws (e.g. F♯ and G♭ for the same sounding pitch). The answer is determined by the staff line/space, not the accidental.
+| Tier | Range above/below staff |
+|------|-------------------------|
+| 1 | Staff body only (5 lines + 4 spaces) |
+| 2 | + 1 ledger line above and below |
+| 3 | + 2 ledger lines above and below (full envelope) |
 
 Tier persists across reloads (`fermata.notename.tier`).
 
